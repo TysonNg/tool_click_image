@@ -1,0 +1,51 @@
+{
+  "process_loops": 1,
+  "infinite_loop": false,
+  "click_delay": 1.0,
+  "templates": [
+    {
+      "type": "image",
+      "path": "1.png",
+      "repeat": 1,
+      "delay": 1.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.7,
+      "click_delay": 0.5,
+      "click_type": "single"
+    },
+    {
+      "type": "image",
+      "path": "5_2.png",
+      "repeat": 1,
+      "delay": 1.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.7,
+      "click_delay": 0.5,
+      "click_type": "single"
+    },
+    {
+      "type": "image",
+      "path": "2.png",
+      "repeat": 1,
+      "delay": 1.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.7,
+      "click_delay": 0.5,
+      "click_type": "single"
+    },
+    {
+      "type": "image",
+      "path": "4_2.png",
+      "repeat": 1,
+      "delay": 1.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.7,
+      "click_delay": 0.5,
+      "click_type": "single"
+    }
+  ]
+}
