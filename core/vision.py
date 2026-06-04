@@ -9,7 +9,9 @@ import pyautogui
 from core import state
 
 
-DEFAULT_THRESHOLD = 0.80
+# Enhanced thresholds for better accuracy
+DEFAULT_THRESHOLD = 0.85  # Increased from 0.80 to reduce false positives
+RECOMMENDED_MIN_THRESHOLD = 0.75  # Minimum recommended threshold
 DEFAULT_BLUR_KSIZE = (3, 3)
 DEFAULT_SCALE_START = 0.70
 DEFAULT_SCALE_END = 1.30
@@ -68,9 +70,24 @@ def scale_values(
 
 
 def _default_scales() -> list[float]:
+    """
+    Enhanced scale ranges với ưu tiên scale 1.0 (gốc).
+    Precision mode: focus vào scale gần 1.0
+    Normal mode: wide range để tìm mọi size
+    """
     if getattr(state, "precision_mode", True):
-        return scale_values(0.85, 1.15, 0.05)
-    return scale_values(DEFAULT_SCALE_START, DEFAULT_SCALE_END, DEFAULT_SCALE_STEP)
+        # Precision: ưu tiên scale gốc (1.0), rồi mới scan xung quanh
+        scales = [1.0]  # Thử scale gốc trước
+        scales.extend(scale_values(0.90, 1.10, 0.05))  # ±10% quanh scale gốc
+        scales.extend(scale_values(0.85, 0.89, 0.05))  # Ngoài vùng
+        scales.extend(scale_values(1.11, 1.15, 0.05))
+        # Loại bỏ duplicate và sort
+        return sorted(list(set([round(s, 4) for s in scales])), key=lambda x: abs(x - 1.0))
+    
+    # Normal mode: wide range
+    scales = [1.0]  # Scale gốc trước
+    scales.extend(scale_values(DEFAULT_SCALE_START, DEFAULT_SCALE_END, DEFAULT_SCALE_STEP))
+    return sorted(list(set([round(s, 4) for s in scales])), key=lambda x: abs(x - 1.0))
 
 
 def resize_template(
@@ -98,17 +115,103 @@ def match_single(
     search_img: np.ndarray,
     template: np.ndarray,
     mask: np.ndarray | None = None,
+    use_edge_validation: bool = True,
 ) -> tuple[float, tuple[int, int], str]:
-    method = cv2.TM_CCOEFF_NORMED
+    """
+    Enhanced matching với edge validation để tránh false positive.
+    
+    Args:
+        search_img: Screenshot grayscale
+        template: Template grayscale
+        mask: Optional mask
+        use_edge_validation: If True, validate với edge detection
+    """
     if mask is None:
-        result = cv2.matchTemplate(search_img, template, method)
-        _, max_val, _, max_loc = cv2.minMaxLoc(result)
-        return float(max_val), max_loc, "TM_CCOEFF_NORMED"
+        # Thử nhiều phương pháp matching và chọn kết quả tốt nhất
+        methods = [
+            (cv2.TM_CCOEFF_NORMED, "TM_CCOEFF_NORMED"),
+            (cv2.TM_CCORR_NORMED, "TM_CCORR_NORMED"),
+            (cv2.TM_SQDIFF_NORMED, "TM_SQDIFF_NORMED"),  # Inverted: 1-score
+        ]
+        
+        best_score = -1.0
+        best_loc = (0, 0)
+        best_method = ""
+        
+        for method_code, method_name in methods:
+            try:
+                result = cv2.matchTemplate(search_img, template, method_code)
+                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+                
+                # TM_SQDIFF_NORMED: score thấp = match tốt (invert)
+                if method_code == cv2.TM_SQDIFF_NORMED:
+                    score = 1.0 - float(min_val)
+                    loc = min_loc
+                else:
+                    score = float(max_val)
+                    loc = max_loc
+                
+                if score > best_score:
+                    best_score = score
+                    best_loc = loc
+                    best_method = method_name
+            except cv2.error:
+                continue
+        
+        # Edge validation để tránh false positive
+        if use_edge_validation and best_score > 0.7:
+            try:
+                # Extract matched region
+                h, w = template.shape[:2]
+                x, y = best_loc
+                if y + h <= search_img.shape[0] and x + w <= search_img.shape[1]:
+                    matched_region = search_img[y:y+h, x:x+w]
+                    
+                    # Compute edge similarity
+                    edge_score = _compute_edge_similarity(template, matched_region)
+                    
+                    # Adjust score dựa trên edge similarity
+                    # Nếu edge khác nhau nhiều, giảm score
+                    if edge_score < 0.6:
+                        # Hình dạng khác nhau nhiều → giảm score mạnh
+                        best_score = best_score * edge_score
+                        best_method = f"{best_method}+EdgePenalty({edge_score:.2f})"
+            except:
+                pass
+        
+        return best_score, best_loc, best_method
 
+    # Với mask, chỉ dùng TM_CCORR_NORMED
     masked_method = cv2.TM_CCORR_NORMED
     result = cv2.matchTemplate(search_img, template, masked_method, mask=mask)
     _, max_val, _, max_loc = cv2.minMaxLoc(result)
     return float(max_val), max_loc, "TM_CCORR_NORMED(masked)"
+
+
+def _compute_edge_similarity(template: np.ndarray, matched_region: np.ndarray) -> float:
+    """
+    Tính similarity giữa edges của template và matched region.
+    Return: 0.0-1.0, càng cao càng giống.
+    """
+    try:
+        # Detect edges bằng Canny
+        template_edges = cv2.Canny(template, 50, 150)
+        matched_edges = cv2.Canny(matched_region, 50, 150)
+        
+        # Normalize
+        template_edges = template_edges.astype(float) / 255.0
+        matched_edges = matched_edges.astype(float) / 255.0
+        
+        # Compute correlation
+        correlation = np.corrcoef(template_edges.flatten(), matched_edges.flatten())[0, 1]
+        
+        # Handle NaN (khi edges rỗng)
+        if np.isnan(correlation):
+            return 0.5
+        
+        return max(0.0, min(1.0, correlation))
+    except:
+        return 1.0  # Nếu lỗi, không penalty
 
 
 def _build_match_result(

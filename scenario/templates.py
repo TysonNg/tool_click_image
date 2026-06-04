@@ -101,6 +101,13 @@ def update_history():
         setup_text += region_text
 
     state.UI.setup_info_text.set(setup_text)
+    
+    # Force scroll update after history changes
+    if hasattr(state.UI, 'force_scroll_update'):
+        try:
+            state.UI.force_scroll_update()
+        except:
+            pass
 
 
 def _autosave_to_library():
@@ -542,7 +549,42 @@ def _show_step_image_config_dialog(file_path, initial=None):
     fields["click_type"] = click_type_var
 
     add_entry("Delay sau click (giay):", "click_delay", initial.get("click_delay", 0.5))
-    add_entry("Threshold (0.0-1.0):", "threshold", initial.get("threshold", 0.7))
+    
+    # Threshold với warning
+    tk.Label(content_frame, text="Threshold (0.0-1.0):", font=("Segoe UI", 11, "bold"), bg="white", fg="black").pack(anchor="w", pady=(10, 3))
+    threshold_frame = tk.Frame(content_frame, bg="white")
+    threshold_frame.pack(fill=tk.X, pady=(0, 5))
+    threshold_var = tk.StringVar(value=str(initial.get("threshold", 0.85)))
+    threshold_entry = tk.Entry(threshold_frame, textvariable=threshold_var, font=("Segoe UI", 11), width=40)
+    threshold_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
+    fields["threshold"] = threshold_var
+    
+    # Warning label
+    threshold_warning = tk.Label(
+        content_frame, 
+        text="⚠️ Khuyến nghị: >= 0.75 để tránh false positive (click sai hình)",
+        font=("Segoe UI", 8, "italic"), 
+        bg="white", 
+        fg="orange",
+        wraplength=480,
+        justify="left"
+    )
+    threshold_warning.pack(anchor="w", pady=(0, 15))
+    
+    def on_threshold_change(*args):
+        try:
+            val = float(threshold_var.get())
+            if val < 0.75:
+                threshold_warning.config(fg="red", text="⚠️ CẢNH BÁO: Threshold < 0.75 dễ click sai hình! Khuyến nghị >= 0.85")
+            elif val < 0.85:
+                threshold_warning.config(fg="orange", text="⚠️ Threshold thấp, có thể click sai. Khuyến nghị >= 0.85")
+            else:
+                threshold_warning.config(fg="green", text="✅ Threshold tốt, độ chính xác cao")
+        except:
+            threshold_warning.config(fg="red", text="❌ Threshold phải là số từ 0.0-1.0")
+    
+    threshold_var.trace("w", on_threshold_change)
+    on_threshold_change()  # Initial check
 
     tk.Label(content_frame, text="Cho tim duoc?:", font=("Segoe UI", 11, "bold"), bg="white", fg="black").pack(anchor="w", pady=(10, 3))
     wait_timeout = initial.get("wait_timeout", 0)
@@ -657,7 +699,26 @@ def _show_step_image_config_dialog(file_path, initial=None):
     delay = float(fields["delay"].get()) if fields["delay"].get() else state.click_delay
     click_type = fields["click_type"].get()
     click_delay_after = float(fields["click_delay"].get()) if fields["click_delay"].get() else 0.5
-    threshold = float(fields["threshold"].get()) if fields["threshold"].get() else 0.7
+    
+    # Validate threshold
+    try:
+        threshold = float(fields["threshold"].get())
+        # Clamp to valid range
+        threshold = max(0.0, min(1.0, threshold))
+        # Warn if too low
+        if threshold < 0.75:
+            response = messagebox.askyesno(
+                "Threshold thấp",
+                f"Threshold {threshold:.2f} rất thấp, dễ click sai hình!\n\n"
+                f"Khuyến nghị: >= 0.85 để độ chính xác cao\n\n"
+                f"Bạn có chắc muốn dùng {threshold:.2f}?",
+                icon="warning"
+            )
+            if not response:
+                return None  # Cancel save
+    except:
+        threshold = 0.85  # Default an toàn
+    
     wait_choice = fields["wait_until_found"].get()
     if wait_choice == "vo cuc":
         wait_until_found = True
