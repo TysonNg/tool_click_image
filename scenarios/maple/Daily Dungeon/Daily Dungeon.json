@@ -5,58 +5,111 @@
   "templates": [
     {
       "type": "image",
-      "path": "capture_1.png",
+      "path": "capture_6.png",
       "repeat": 1,
-      "delay": 1.0,
+      "delay": 2.0,
       "wait_until_found": true,
       "wait_timeout": -1,
       "threshold": 0.7,
-      "click_delay": 0.5,
-      "click_type": "single"
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 67,
+      "click_y": 82,
+      "mask_path": null
     },
     {
       "type": "image",
-      "path": "capture_2.png",
+      "path": "capture_7.png",
       "repeat": 1,
-      "delay": 1.0,
+      "delay": 2.0,
       "wait_until_found": true,
       "wait_timeout": -1,
       "threshold": 0.7,
-      "click_delay": 0.5,
-      "click_type": "single"
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 71,
+      "click_y": 20,
+      "mask_path": null
     },
     {
       "type": "image",
-      "path": "capture_3.png",
+      "path": "capture_10.png",
       "repeat": 1,
-      "delay": 1.0,
+      "delay": 2.0,
       "wait_until_found": true,
       "wait_timeout": -1,
       "threshold": 0.7,
-      "click_delay": 0.5,
-      "click_type": "single"
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 82,
+      "click_y": 19,
+      "mask_path": null
     },
     {
       "type": "image",
-      "path": "capture_4.png",
+      "path": "capture_13.png",
       "repeat": 1,
-      "delay": 1.0,
+      "delay": 2.0,
       "wait_until_found": true,
       "wait_timeout": -1,
-      "threshold": 0.7,
-      "click_delay": 0.5,
-      "click_type": "single"
+      "threshold": 0.8,
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 55,
+      "click_y": 18
     },
     {
       "type": "image",
-      "path": "capture_5.png",
+      "path": "capture_14.png",
       "repeat": 1,
-      "delay": 1.0,
+      "delay": 2.0,
       "wait_until_found": true,
       "wait_timeout": -1,
-      "threshold": 0.7,
-      "click_delay": 0.5,
-      "click_type": "single"
+      "threshold": 0.8,
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 25,
+      "click_y": 26
     }
   ]
 }

@@ -56,6 +56,7 @@ window_width = max(800, min(1400, int(screen_width * 0.7)))
 window_height = max(600, min(1000, int(screen_height * 0.75)))
 root.geometry(f"{window_width}x{window_height}")
 root.resizable(True, True)
+root.minsize(700, 500)  # Set minimum window size to prevent UI breaking
 root.configure(bg=PKM_BG_MAIN)
 root.base_width = window_width
 root.base_height = window_height
@@ -155,8 +156,11 @@ left_panel_outer.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
 left_canvas = tk.Canvas(left_panel_outer, bg=PKM_BG_MAIN, highlightthickness=0)
 left_scrollbar = tk.Scrollbar(left_panel_outer, orient="vertical", command=left_canvas.yview)
 left_panel = tk.Frame(left_canvas, bg=PKM_BG_MAIN)
-left_panel.bind("<Configure>",
-                lambda e: left_canvas.configure(scrollregion=left_canvas.bbox("all")))
+
+def _update_left_scroll_region(event=None):
+    left_canvas.configure(scrollregion=left_canvas.bbox("all"))
+
+left_panel.bind("<Configure>", _update_left_scroll_region)
 left_canvas.configure(yscrollcommand=left_scrollbar.set)
 left_canvas_window = left_canvas.create_window((0, 0), window=left_panel, anchor="nw")
 
@@ -165,6 +169,8 @@ def _on_left_canvas_configure(event):
     left_panel.update_idletasks()
     pw = left_panel.winfo_reqwidth()
     left_canvas.itemconfig(left_canvas_window, width=max(cw, pw))
+    # Force update scroll region on resize
+    _update_left_scroll_region()
 
 left_canvas.pack(side="left", fill="both", expand=True)
 left_scrollbar.pack(side="right", fill="y")
@@ -180,8 +186,11 @@ right_panel_outer.grid(row=0, column=2, sticky="nsew", padx=0, pady=0)
 right_canvas = tk.Canvas(right_panel_outer, bg=PKM_BG_MAIN, highlightthickness=0)
 right_scrollbar = tk.Scrollbar(right_panel_outer, orient="vertical", command=right_canvas.yview)
 right_panel = tk.Frame(right_canvas, bg=PKM_BG_MAIN)
-right_panel.bind("<Configure>",
-                 lambda e: right_canvas.configure(scrollregion=right_canvas.bbox("all")))
+
+def _update_right_scroll_region(event=None):
+    right_canvas.configure(scrollregion=right_canvas.bbox("all"))
+
+right_panel.bind("<Configure>", _update_right_scroll_region)
 right_canvas.configure(yscrollcommand=right_scrollbar.set)
 right_canvas_window = right_canvas.create_window((0, 0), window=right_panel, anchor="nw")
 
@@ -190,30 +199,48 @@ def _on_right_canvas_configure(event):
     right_panel.update_idletasks()
     pw = right_panel.winfo_reqwidth()
     right_canvas.itemconfig(right_canvas_window, width=max(cw, pw))
+    # Force update scroll region on resize
+    _update_right_scroll_region()
 
 right_canvas.pack(side="left", fill="both", expand=True)
 right_scrollbar.pack(side="right", fill="y")
 right_canvas.bind("<Configure>", _on_right_canvas_configure)
 
-# Mousewheel
+# Mousewheel - Enhanced for better scroll experience
 def _on_mousewheel(event):
+    """Enhanced mousewheel handler with better detection"""
     try:
-        try:
-            if left_canvas.winfo_containing(event.x_root, event.y_root):
-                left_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-                return
-        except:
-            pass
-        try:
-            if right_canvas.winfo_containing(event.x_root, event.y_root):
-                right_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-                return
-        except:
-            pass
-    except:
+        # Get widget under mouse
+        widget = root.winfo_containing(event.x_root, event.y_root)
+        if widget is None:
+            return
+        
+        # Check if mouse is over left panel area
+        if widget == left_canvas or widget in left_panel.winfo_children() or _is_child_of(widget, left_panel):
+            left_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            return "break"
+        
+        # Check if mouse is over right panel area
+        if widget == right_canvas or widget in right_panel.winfo_children() or _is_child_of(widget, right_panel):
+            right_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            return "break"
+    except Exception as e:
         pass
 
-left_canvas.bind_all("<MouseWheel>", _on_mousewheel)
+def _is_child_of(widget, parent):
+    """Check if widget is a descendant of parent"""
+    try:
+        current = widget
+        while current:
+            if current == parent:
+                return True
+            current = current.master
+        return False
+    except:
+        return False
+
+# Bind mousewheel to root
+root.bind_all("<MouseWheel>", _on_mousewheel)
 
 # ════════════════════════════════════════════════════════════
 #  LEFT PANEL — Controls
@@ -474,10 +501,33 @@ status_label.pack(side="left", fill="both", expand=True, padx=(0, 16), pady=9)
 state.UI.status_label = status_label
 
 # ════════════════════════════════════════════════════════════
+#  SCROLL HELPERS
+# ════════════════════════════════════════════════════════════
+def force_scroll_update():
+    """Force update scroll regions - call this when content changes"""
+    try:
+        left_panel.update_idletasks()
+        left_canvas.configure(scrollregion=left_canvas.bbox("all"))
+    except:
+        pass
+    try:
+        right_panel.update_idletasks()
+        right_canvas.configure(scrollregion=right_canvas.bbox("all"))
+    except:
+        pass
+
+# Store in state for external access
+state.UI.force_scroll_update = force_scroll_update
+
+# ════════════════════════════════════════════════════════════
 #  RESPONSIVE + INIT
 # ════════════════════════════════════════════════════════════
 root.bind("<Configure>", on_window_configure)
 root.bind("<Escape>", stop_clicking)
 register_global_hotkeys()
 update_history()
+
+# Force initial scroll update after a short delay
+root.after(100, force_scroll_update)
+
 root.mainloop()
