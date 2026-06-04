@@ -7,11 +7,13 @@ process_loops = 1
 infinite_loop = False
 click_delay = 1.0
 human_click_mode = False
+precision_mode = True
 
 scenario_queue = []
 scenario_metadata = []
 current_scenario_index = 0
 queue_stopped = False
+last_run_result = None
 
 current_library_game = None
 current_library_stage = None
@@ -32,6 +34,7 @@ class UI:
     btn_hotkey_start = None
     btn_hotkey_stop = None
     btn_human_mode = None
+    btn_precision_mode = None
 
 
 def set_status(text):

@@ -5,59 +5,58 @@
   "templates": [
     {
       "type": "image",
-      "path": "1.png",
-      "repeat": 1,
-      "delay": 1.0,
-      "wait_until_found": true,
-      "wait_timeout": 30,
-      "threshold": 0.7,
-      "click_delay": 1.0,
-      "click_type": "single"
-    },
-    {
-      "type": "image",
-      "path": "2.png",
+      "path": "capture_1.png",
       "repeat": 1,
       "delay": 1.0,
       "wait_until_found": true,
       "wait_timeout": -1,
       "threshold": 0.7,
-      "click_delay": 1.0,
+      "click_delay": 0.5,
       "click_type": "single"
     },
     {
       "type": "image",
-      "path": "3.png",
+      "path": "capture_2.png",
       "repeat": 1,
       "delay": 1.0,
       "wait_until_found": true,
       "wait_timeout": -1,
       "threshold": 0.7,
-      "click_delay": 1.0,
+      "click_delay": 0.5,
       "click_type": "single"
     },
     {
       "type": "image",
-      "path": "4.png",
+      "path": "capture_3.png",
       "repeat": 1,
       "delay": 1.0,
       "wait_until_found": true,
       "wait_timeout": -1,
       "threshold": 0.7,
-      "click_delay": 1.0,
+      "click_delay": 0.5,
       "click_type": "single"
     },
     {
       "type": "image",
-      "path": "5.png",
+      "path": "capture_4.png",
       "repeat": 1,
       "delay": 1.0,
       "wait_until_found": true,
       "wait_timeout": -1,
       "threshold": 0.7,
-      "click_delay": 1.0,
+      "click_delay": 0.5,
+      "click_type": "single"
+    },
+    {
+      "type": "image",
+      "path": "capture_5.png",
+      "repeat": 1,
+      "delay": 1.0,
+      "wait_until_found": true,
+      "wait_timeout": -1,
+      "threshold": 0.7,
+      "click_delay": 0.5,
       "click_type": "single"
     }
-  ],
-  "image_templates": []
+  ]
 }

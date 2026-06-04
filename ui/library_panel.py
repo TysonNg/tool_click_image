@@ -248,20 +248,21 @@ def create_library_panel(parent):
         if not current_game:
             return
         json_path = get_stage_json(current_game, stage_name)
-        if not json_path:
-            set_status(f"Ai '{stage_name}' chua co file JSON.")
-            return
-        scenario, templates, _metadata = load_templates_from_file(json_path, prompt_for_missing=True)
-        state.process_loops = scenario.get("process_loops", 1)
-        state.infinite_loop = scenario.get("infinite_loop", False)
-        state.click_delay = scenario.get("click_delay", 1.0)
-        state.templates = templates
+        if json_path:
+            scenario, templates, _metadata = load_templates_from_file(json_path, prompt_for_missing=True)
+            state.process_loops = scenario.get("process_loops", 1)
+            state.infinite_loop = scenario.get("infinite_loop", False)
+            state.click_delay = scenario.get("click_delay", 1.0)
+            state.templates = templates
+            set_status(f"Da nap ai vao editor: {stage_name}")
+        else:
+            state.templates = []
+            set_status(f"Da nap ai trong (chua co JSON): {stage_name}")
         state.scenario_metadata = []
         state.scenario_queue = []
         state.current_library_game = current_game
         state.current_library_stage = stage_name
         update_history()
-        set_status(f"Da nap ai vao editor: {stage_name}")
 
     def save_editor_to_stage():
         current_game, stage_name = require_single_stage()

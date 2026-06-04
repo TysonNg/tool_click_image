@@ -3,6 +3,93 @@ from ui.theme import *
 from core import state
 
 
+def show_image_source_dialog():
+    root = state.UI.root
+    dialog = tk.Toplevel(root)
+    dialog.title("Nguon anh mau")
+    dialog.geometry("460x300")
+    dialog.minsize(420, 280)
+    dialog.resizable(False, False)
+
+    main_frame = tk.Frame(dialog, bg="white")
+    main_frame.pack(fill=tk.BOTH, expand=True)
+
+    header_frame = tk.Frame(main_frame, bg=PKM_BG_INNER)
+    header_frame.pack(side=tk.TOP, fill=tk.X)
+    tk.Label(
+        header_frame,
+        text="Chon nguon anh mau",
+        font=("Segoe UI", 14, "bold"),
+        bg=PKM_BG_INNER,
+        fg=PKM_YELLOW,
+    ).pack(pady=15)
+
+    content_frame = tk.Frame(main_frame, bg="white")
+    content_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=(20, 10))
+
+    tk.Label(
+        content_frame,
+        text="Nen uu tien chup tren man hinh de tranh lech ti le/DPI.",
+        font=("Segoe UI", 10),
+        bg="white",
+        fg="black",
+        wraplength=380,
+        justify="left",
+    ).pack(anchor="w", pady=(0, 16))
+
+    result = {"value": None}
+
+    def choose(value):
+        result["value"] = value
+        dialog.destroy()
+
+    action_frame = tk.Frame(content_frame, bg="white")
+    action_frame.pack(fill=tk.X, pady=(0, 10))
+
+    tk.Button(
+        action_frame,
+        text="Chup tren man hinh",
+        command=lambda: choose("capture"),
+        bg=PKM_GREEN,
+        fg=PKM_BG_DARK,
+        font=("Segoe UI", 11, "bold"),
+        padx=20,
+        pady=10,
+    ).pack(fill=tk.X, pady=(0, 10))
+
+    tk.Button(
+        action_frame,
+        text="Chon file PNG co san",
+        command=lambda: choose("file"),
+        bg=PKM_BLUE_DARK,
+        fg=PKM_WHITE,
+        font=("Segoe UI", 11, "bold"),
+        padx=20,
+        pady=10,
+    ).pack(fill=tk.X)
+
+    footer_frame = tk.Frame(main_frame, bg="white")
+    footer_frame.pack(fill=tk.X, side=tk.BOTTOM, padx=20, pady=(0, 20))
+
+    tk.Button(
+        footer_frame,
+        text="Huy",
+        command=dialog.destroy,
+        bg=PKM_RED,
+        fg="white",
+        font=("Segoe UI", 10, "bold"),
+        padx=20,
+        pady=8,
+    ).pack(fill=tk.X)
+
+    dialog.bind("<Escape>", lambda _event: dialog.destroy())
+    dialog.protocol("WM_DELETE_WINDOW", dialog.destroy)
+    dialog.transient(root)
+    dialog.grab_set()
+    root.wait_window(dialog)
+    return result["value"]
+
+
 def show_image_config_dialog(is_detection=False):
     root = state.UI.root
     dialog = tk.Toplevel(root)

@@ -28,12 +28,12 @@ from core.runner import start_clicking, stop_clicking, smart_start
 from scenario.io import save_scenario, load_scenario, load_multiple_scenarios, clear_scenarios
 from scenario.templates import (
     add_image, add_coordinate, add_current_position, add_keyboard_key,
-    set_search_region, set_process_loops, set_speed, toggle_human_click,
+    set_search_region, clear_search_region, set_process_loops, set_speed, toggle_human_click, toggle_precision_mode,
     test_image_matching, update_history,
     delete_selected, clear_all_items, edit_delay, edit_image_config,
     move_selected_up, move_selected_down,
-    edit_scenario, delete_selected_scenario, edit_scenario_details,
 )
+from scenario.details_editor import edit_scenario_details
 from ui.theme import *
 from ui.widgets import create_btn, create_card
 from ui.library_panel import create_library_panel
@@ -262,6 +262,20 @@ btn_human_mode = create_btn(human_mode_row, "🤖 Click tức thì: BẬT",
 btn_human_mode.pack(fill="both", expand=True, ipady=5)
 state.UI.btn_human_mode = btn_human_mode
 
+precision_mode_row = tk.Frame(settings_inner, bg=PKM_BG_CARD)
+precision_mode_row.pack(fill="both", expand=True, pady=(0, 2), padx=0)
+
+btn_precision_mode = create_btn(
+    precision_mode_row,
+    "🎯 Precision Mode: BẬT",
+    toggle_precision_mode,
+    bg=PKM_BLUE_DARK,
+    fg=PKM_YELLOW,
+    hover_bg=PKM_BLUE,
+)
+btn_precision_mode.pack(fill="both", expand=True, ipady=5)
+state.UI.btn_precision_mode = btn_precision_mode
+
 hotkey_row = tk.Frame(settings_inner, bg=PKM_BG_CARD)
 hotkey_row.pack(fill="both", expand=True, pady=(4, 2), padx=0)
 
@@ -306,6 +320,10 @@ search_region_row.pack(fill="both", expand=True, pady=(4, 0), padx=0)
 create_btn(search_region_row, "🔎 Giới hạn phạm vi tìm kiếm",
            set_search_region, bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
            ).pack(fill="both", expand=True, ipady=5, padx=0)
+
+create_btn(search_region_row, "Clear Search Region",
+           clear_search_region, bg=PKM_RED, fg=PKM_WHITE, hover_bg=PKM_RED_LIGHT
+           ).pack(fill="both", expand=True, ipady=5, padx=0, pady=(4, 0))
 
 # SECTION 3: Battle
 exec_inner = create_card(left_panel, "⚡  CHIẾN ĐẤU!", PKM_GREEN)
@@ -409,42 +427,30 @@ tk.Frame(list_ops_frame, bg=PKM_GOLD, height=2).pack(fill="x", pady=(0, 4))
 
 row1 = tk.Frame(list_ops_frame, bg=PKM_BG_CARD)
 row1.pack(fill="both", expand=True, pady=1, padx=0)
-create_btn(row1, "▲  Di Chuyển Lên", move_selected_up,
+create_btn(row1, "▲  Lên", move_selected_up,
            bg=PKM_BLUE_DARK, fg=PKM_WHITE, hover_bg=PKM_BLUE
            ).pack(side="left", fill="both", expand=True, padx=(0, 2), ipady=5)
-create_btn(row1, "▼  Di Chuyển Xuống", move_selected_down,
+create_btn(row1, "▼  Xuống", move_selected_down,
            bg=PKM_BLUE_DARK, fg=PKM_WHITE, hover_bg=PKM_BLUE
            ).pack(side="right", fill="both", expand=True, padx=(2, 0), ipady=5)
 
 row2 = tk.Frame(list_ops_frame, bg=PKM_BG_CARD)
 row2.pack(fill="both", expand=True, pady=1, padx=0)
-create_btn(row2, "🗑️  Xóa Mục", delete_selected,
-           bg=PKM_RED, fg=PKM_WHITE, hover_bg=PKM_RED_LIGHT
+create_btn(row2, "✏️  Sửa", edit_image_config,
+           bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
            ).pack(side="left", fill="both", expand=True, padx=(0, 2), ipady=5)
-create_btn(row2, "🗑️  Xóa Tất Cả", clear_all_items,
+create_btn(row2, "🗑️  Xóa", delete_selected,
            bg=PKM_RED, fg=PKM_WHITE, hover_bg=PKM_RED_LIGHT
            ).pack(side="right", fill="both", expand=True, padx=(2, 0), ipady=5)
 
 row3 = tk.Frame(list_ops_frame, bg=PKM_BG_CARD)
 row3.pack(fill="both", expand=True, pady=1, padx=0)
-create_btn(row3, "⚙️  Chỉnh Sửa Toàn Bộ Thông Số", edit_image_config,
+create_btn(row3, "📋  Quản Lý Kịch Bản", edit_scenario_details,
            bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
-           ).pack(fill="both", expand=True, ipady=5, padx=0)
-
-row4 = tk.Frame(list_ops_frame, bg=PKM_BG_CARD)
-row4.pack(fill="both", expand=True, pady=1, padx=0)
-create_btn(row4, "📋 Chỉnh Sửa Kịch Bản", edit_scenario,
-           bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
-           ).pack(fill="both", expand=True, ipady=5, padx=0)
-
-row5 = tk.Frame(list_ops_frame, bg=PKM_BG_CARD)
-row5.pack(fill="both", expand=True, pady=1, padx=0)
-create_btn(row5, "✏️ Edit Chi Tiết Kịch Bản", edit_scenario_details,
-           bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
-           ).pack(side=tk.LEFT, fill="both", expand=True, padx=(0, 2), ipady=5)
-create_btn(row5, "🗑️ Xóa Kịch Bản", delete_selected_scenario,
+           ).pack(side="left", fill="both", expand=True, padx=(0, 2), ipady=5)
+create_btn(row3, "🗑️  Xóa Sạch", clear_all_items,
            bg=PKM_RED, fg=PKM_WHITE, hover_bg=PKM_RED_LIGHT
-           ).pack(side=tk.RIGHT, fill="both", expand=True, padx=(2, 0), ipady=5)
+           ).pack(side="right", fill="both", expand=True, padx=(2, 0), ipady=5)
 
 # ════════════════════════════════════════════════════════════
 #  STATUS BAR
