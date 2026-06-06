@@ -25,6 +25,8 @@ from ui.dialogs import (
     show_image_config_dialog,
     show_coordinate_config_dialog,
     show_keyboard_config_dialog,
+    _safe_destroy, _force_destroy,
+    ask_string_dialog, ask_float_dialog,
 )
 from scenario.library import SCENARIOS_ROOT, copy_image_to_stage
 from ui.theme import *
@@ -39,8 +41,17 @@ def update_history():
         for scenario_idx, metadata in enumerate(state.scenario_metadata):
             # Header cho mỗi kịch bản
             scenario_name = os.path.basename(metadata["file_path"])
+            process_loops = metadata.get("process_loops", 1)
+            infinite_loop = metadata.get("infinite_loop", False)
+            
+            # Build loop info
+            if infinite_loop:
+                loop_info = " [∞ vòng lặp]"
+            else:
+                loop_info = f" [x{process_loops} lần]" if process_loops > 1 else ""
+            
             state.UI.history_list.insert(tk.END, f"{'='*60}")
-            state.UI.history_list.insert(tk.END, f"📋 KỊCH BẢN {scenario_idx + 1}: {scenario_name}")
+            state.UI.history_list.insert(tk.END, f"📋 KỊCH BẢN {scenario_idx + 1}: {scenario_name}{loop_info}")
             state.UI.history_list.insert(tk.END, f"{'='*60}")
 
             # Hiển thị các item của kịch bản này
@@ -352,14 +363,14 @@ def capture_region_with_overlay(min_width=8, min_height=8, instruction_text="Keo
             else:
                 result["bbox"] = (x1, y1, x2, y2)
                 result["cancelled"] = False
-            overlay.destroy()
+            _force_destroy(overlay)
 
         def on_mouse_up(_event):
             finish_selection()
 
         def on_escape(_event=None):
             result["cancelled"] = True
-            overlay.destroy()
+            _force_destroy(overlay)
 
         canvas.bind("<Button-1>", on_mouse_down)
         canvas.bind("<B1-Motion>", on_mouse_drag)
@@ -369,7 +380,7 @@ def capture_region_with_overlay(min_width=8, min_height=8, instruction_text="Keo
         root.wait_window(overlay)
     finally:
         if overlay is not None and overlay.winfo_exists():
-            overlay.destroy()
+            _force_destroy(overlay)
         root.deiconify()
         root.lift()
         root.focus_force()
@@ -468,11 +479,11 @@ def _pick_click_point_in_template(file_path, initial_point=None):
 
     def on_ok(event=None):
         current["ok"] = True
-        dialog.destroy()
+        _safe_destroy(dialog)
 
     def on_cancel(event=None):
         current["ok"] = False
-        dialog.destroy()
+        _safe_destroy(dialog)
 
     canvas.bind("<Button-1>", on_canvas_click)
     draw_marker()
@@ -554,7 +565,7 @@ def _show_step_image_config_dialog(file_path, initial=None):
     tk.Label(content_frame, text="Threshold (0.0-1.0):", font=("Segoe UI", 11, "bold"), bg="white", fg="black").pack(anchor="w", pady=(10, 3))
     threshold_frame = tk.Frame(content_frame, bg="white")
     threshold_frame.pack(fill=tk.X, pady=(0, 5))
-    threshold_var = tk.StringVar(value=str(initial.get("threshold", 0.85)))
+    threshold_var = tk.StringVar(value=str(initial.get("threshold", 0.70)))
     threshold_entry = tk.Entry(threshold_frame, textvariable=threshold_var, font=("Segoe UI", 11), width=40)
     threshold_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
     fields["threshold"] = threshold_var
@@ -562,7 +573,7 @@ def _show_step_image_config_dialog(file_path, initial=None):
     # Warning label
     threshold_warning = tk.Label(
         content_frame, 
-        text="⚠️ Khuyến nghị: >= 0.75 để tránh false positive (click sai hình)",
+        text="⚠️ Khuyến nghị: >= 0.70 để tránh false positive (click sai hình)",
         font=("Segoe UI", 8, "italic"), 
         bg="white", 
         fg="orange",
@@ -574,12 +585,12 @@ def _show_step_image_config_dialog(file_path, initial=None):
     def on_threshold_change(*args):
         try:
             val = float(threshold_var.get())
-            if val < 0.75:
-                threshold_warning.config(fg="red", text="⚠️ CẢNH BÁO: Threshold < 0.75 dễ click sai hình! Khuyến nghị >= 0.85")
-            elif val < 0.85:
-                threshold_warning.config(fg="orange", text="⚠️ Threshold thấp, có thể click sai. Khuyến nghị >= 0.85")
+            if val < 0.65:
+                threshold_warning.config(fg="red", text="⚠️ CẢNH BÁO: Threshold < 0.65 rất dễ click sai hình!")
+            elif val < 0.70:
+                threshold_warning.config(fg="orange", text="⚠️ Threshold thấp, có thể click sai. Khuyến nghị >= 0.70")
             else:
-                threshold_warning.config(fg="green", text="✅ Threshold tốt, độ chính xác cao")
+                threshold_warning.config(fg="green", text="✅ Threshold tốt")
         except:
             threshold_warning.config(fg="red", text="❌ Threshold phải là số từ 0.0-1.0")
     
@@ -676,11 +687,11 @@ def _show_step_image_config_dialog(file_path, initial=None):
 
     def on_ok(event=None):
         result["ok"] = True
-        dialog.destroy()
+        _safe_destroy(dialog)
 
     def on_cancel(event=None):
         result["ok"] = False
-        dialog.destroy()
+        _safe_destroy(dialog)
 
     tk.Button(button_frame, text="Luu", command=on_ok, bg=PKM_GREEN, fg="white", font=("Segoe UI", 11, "bold"), padx=30, pady=10, width=18).pack(side=tk.LEFT, padx=5, expand=True)
     tk.Button(button_frame, text="Huy", command=on_cancel, bg=PKM_RED, fg="white", font=("Segoe UI", 11, "bold"), padx=30, pady=10, width=18).pack(side=tk.LEFT, padx=5, expand=True)
@@ -706,18 +717,18 @@ def _show_step_image_config_dialog(file_path, initial=None):
         # Clamp to valid range
         threshold = max(0.0, min(1.0, threshold))
         # Warn if too low
-        if threshold < 0.75:
+        if threshold < 0.70:
             response = messagebox.askyesno(
                 "Threshold thấp",
-                f"Threshold {threshold:.2f} rất thấp, dễ click sai hình!\n\n"
-                f"Khuyến nghị: >= 0.85 để độ chính xác cao\n\n"
+                f"Threshold {threshold:.2f} thấp, có thể click sai hình!\n\n"
+                f"Khuyến nghị: >= 0.70 để cân bằng chính xác/tốc độ\n\n"
                 f"Bạn có chắc muốn dùng {threshold:.2f}?",
                 icon="warning"
             )
             if not response:
                 return None  # Cancel save
     except:
-        threshold = 0.85  # Default an toàn
+        threshold = 0.70  # Default practical threshold
     
     wait_choice = fields["wait_until_found"].get()
     if wait_choice == "vo cuc":
@@ -883,6 +894,7 @@ def add_coordinate():
         "repeat": config["repeat"],
         "click_type": config["click_type"],
         "delay_after": config["delay_after"],
+        "is_relative": False,  # Regular coordinates are absolute
         "path": f"({config['x']},{config['y']})"
     })
     update_history()
@@ -911,6 +923,7 @@ def add_current_position():
         "repeat": config["repeat"],
         "click_type": config["click_type"],
         "delay_after": config["delay_after"],
+        "is_relative": False,  # Regular coordinates are absolute
         "path": f"({config['x']},{config['y']})"
     })
     update_history()
@@ -996,12 +1009,12 @@ def set_search_region():
             state.search_region_enabled = False
 
         update_history()  # Cập nhật Pokédex
-        overlay_window.destroy()
+        _safe_destroy(overlay_window)
 
     def on_escape(event):
         state.UI.status_label.config(text="🔍 Phạm vi tìm kiếm: Toàn màn hình")
         state.search_region_enabled = False
-        overlay_window.destroy()
+        _safe_destroy(overlay_window)
 
     canvas.bind("<Button-1>", on_mouse_down)
     canvas.bind("<B1-Motion>", on_mouse_drag)
@@ -1021,10 +1034,10 @@ def clear_search_region():
 
 def set_process_loops():
     # Hỏi người dùng có muốn vòng lặp vô hạn không
-    response = simpledialog.askstring(
+    response = ask_string_dialog(
         "Vòng lặp",
         "Nhập số vòng lặp (hoặc 'vô hạn' / '∞' để lặp cho đến khi bấm dừng):",
-        initialvalue="1"
+        default="1"
     )
 
     if response is None:
@@ -1053,10 +1066,11 @@ def set_process_loops():
 
 
 def set_speed():
-    delay = simpledialog.askfloat("Tốc độ", "Nhập thời gian nghỉ giữa các click (giây):", minvalue=0.1, maxvalue=5.0)
+    delay = ask_float_dialog("Tốc độ", "Nhập thời gian nghỉ giữa các click (giây):", min_val=0.0, max_val=5.0)
     if delay is None: return
     state.click_delay = delay
     state.UI.status_label.config(text=f"⏩ Đã đặt tốc độ: {state.click_delay} giây giữa các click")
+    update_history()  # Update setup info text with new speed
 
 
 def toggle_human_click():
@@ -1085,6 +1099,24 @@ def toggle_precision_mode():
             else "✅ Match rộng: dải scale rộng, dễ bắt hơn nhưng dễ match nhầm hơn"
         )
     )
+
+
+def toggle_optimize_mode():
+    """
+    🚀 COMBO: Bật cả Precision Mode + Vẽ Search Region
+    Gọn gàng hơn - tối ưu hóa trong 1 nút!
+    """
+    # STEP 1: Bật Precision Mode
+    state.precision_mode = True
+    try:
+        state.UI.btn_optimize_mode.config(text="🚀 Chế độ Tối ưu: BẬT", fg=PKM_YELLOW)
+    except Exception:
+        pass
+    
+    state.UI.status_label.config(text="✅ Precision Mode BẬT ✓  |  Bây giờ kéo vẽ phạm vi tìm kiếm...")
+    
+    # STEP 2: Ngay lập tức mở Search Region UI
+    state.UI.root.after(200, set_search_region)
 
 
 def test_image_matching():
@@ -1193,7 +1225,7 @@ def edit_delay():
     if "[DETECTION]" in selected_text:
         # Cho phép edit delay của detection items
         if 0 <= index < len(state.templates):
-            new_delay = simpledialog.askfloat("Chỉnh sửa Delay", f"Nhập delay mới (hiện tại: {state.templates[index].get('delay', 0.5)}s):", minvalue=0.1, maxvalue=10.0)
+            new_delay = ask_float_dialog("Chỉnh sửa Delay", f"Nhập delay mới (hiện tại: {state.templates[index].get('delay', 0.5)}s):", minvalue=0.1, maxvalue=10.0)
             if new_delay is not None:
                 state.templates[index]["delay"] = new_delay
                 update_history()
@@ -1202,7 +1234,7 @@ def edit_delay():
 
     # Edit delay của templates thường
     if 0 <= index < len(state.templates):
-        new_delay = simpledialog.askfloat("Chỉnh sửa Delay", f"Nhập delay mới (hiện tại: {state.templates[index].get('delay', state.click_delay)}s):", minvalue=0.1, maxvalue=10.0)
+        new_delay = ask_float_dialog("Chỉnh sửa Delay", f"Nhập delay mới (hiện tại: {state.templates[index].get('delay', state.click_delay)}s):", minvalue=0.1, maxvalue=10.0)
         if new_delay is not None:
             state.templates[index]["delay"] = new_delay
             update_history()
@@ -1246,7 +1278,11 @@ def _edit_template_in_list(template_list, idx, persist):
         if persist:
             _autosave_to_library()
     elif item_type == "coord":
-        config = show_coordinate_config_dialog()
+        # Pass current values to dialog for editing
+        config = show_coordinate_config_dialog(
+            initial_x=tpl.get("x", 0),
+            initial_y=tpl.get("y", 0)
+        )
         if config is not None:
             tpl["x"] = config["x"]
             tpl["y"] = config["y"]
@@ -1259,7 +1295,13 @@ def _edit_template_in_list(template_list, idx, persist):
                 _autosave_to_library()
             state.UI.status_label.config(text=f"✅ Đã cập nhật tọa độ ({config['x']},{config['y']})")
     elif item_type == "key":
-        config = show_keyboard_config_dialog()
+        # Pass current values to dialog for editing
+        config = show_keyboard_config_dialog(
+            initial_key=tpl.get("key", "enter"),
+            initial_repeat=tpl.get("repeat", 1),
+            initial_key_type=tpl.get("key_type", "press"),
+            initial_delay=tpl.get("delay_after", 0.5)
+        )
         if config is not None:
             tpl["key"] = config["key"]
             tpl["repeat"] = config["repeat"]
@@ -1351,11 +1393,11 @@ def _open_image_edit_dialog(tpl):
 
     def on_ok(event=None):
         result["ok"] = True
-        dialog.destroy()
+        _safe_destroy(dialog)
 
     def on_cancel(event=None):
         result["ok"] = False
-        dialog.destroy()
+        _safe_destroy(dialog)
 
     tk.Button(button_frame, text="✅ Lưu", command=on_ok,
               bg=PKM_GREEN, fg="white", font=("Segoe UI", 11, "bold"),
@@ -1525,11 +1567,11 @@ def _edit_scenario_metadata(scenario_idx):
 
     def on_ok(event=None):
         result["ok"] = True
-        dialog.destroy()
+        _safe_destroy(dialog)
 
     def on_cancel(event=None):
         result["ok"] = False
-        dialog.destroy()
+        _safe_destroy(dialog)
 
     ok_btn = tk.Button(button_frame, text="✅ Lưu", command=on_ok,
                        bg=PKM_GREEN, fg="white", font=("Segoe UI", 11, "bold"),
@@ -1785,7 +1827,7 @@ def edit_scenario_details():
                 template_list.delete(tpl_idx)
                 template_list.insert(tpl_idx, display_text)
 
-                edit_dialog.destroy()
+                edit__safe_destroy(dialog)
                 messagebox.showinfo("Thành công", "Đã cập nhật ảnh.")
             except Exception as e:
                 messagebox.showerror("Lỗi", f"Lỗi: {e}")
@@ -1801,7 +1843,7 @@ def edit_scenario_details():
         cancel_btn.pack(side=tk.LEFT, padx=5, expand=True)
 
         edit_dialog.bind("<Return>", on_ok)
-        edit_dialog.bind("<Escape>", lambda e: edit_dialog.destroy())
+        edit_dialog.bind("<Escape>", lambda e: edit__safe_destroy(dialog))
         edit_dialog.protocol("WM_DELETE_WINDOW", edit_dialog.destroy)
 
         edit_dialog.transient(dialog)
@@ -1919,7 +1961,7 @@ def edit_scenario_details():
     btn_add.pack(side=tk.LEFT, fill="x", expand=True, padx=3)
 
     # Close button
-    close_btn = tk.Button(button_row2, text="✅ Đóng", command=lambda: [dialog.destroy(), update_history()],
+    close_btn = tk.Button(button_row2, text="✅ Đóng", command=lambda: [_safe_destroy(dialog), update_history()],
                          bg=PKM_BLUE, fg=PKM_WHITE, font=("Segoe UI", 10, "bold"),
                          padx=15, pady=8)
     close_btn.pack(side=tk.RIGHT, fill="x", expand=True, padx=3)
@@ -2080,3 +2122,6 @@ def test_image_matching():
             f"Region source: {region_source}, Best template: {match.template_name}"
         )
         safe_print("ðŸ§ª [TEST] HÃ£y thá»­ tÄƒng context áº£nh, Ä‘á»•i vÃ¹ng tÃ¬m hoáº·c chá»‰nh threshold")
+
+
+

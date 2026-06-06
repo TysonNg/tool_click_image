@@ -1,0 +1,226 @@
+================================================================================
+                     WRONG BUTTON CLICK - ISSUE FOUND
+                         June 6, 2026
+================================================================================
+
+PROBLEM:
+  Bạn cài nút "Go to Menu" (Blue button)
+  Nhưng nó click nút "Quản Lý Kịch Bản" (Yellow text) ❌
+
+ROOT CAUSE:
+  2 khả năng:
+  1. Template sai (capture hình sai button)
+  2. Click point sai (ngoài nút)
+
+SOLUTION: 
+  5 phút fix + test ✅
+
+================================================================================
+QUICK DIAGNOSIS (2 phút)
+================================================================================
+
+Open File Explorer:
+  Path: d:\Program Files\Autoclick_ver_2\tool_click_image\scenarios\Dragoncity\Arena
+
+View PNG files:
+  - 3.png → Mở xem, là BLUE hay YELLOW?
+  - capture_1.png → Blue hay Yellow?
+  - capture_2.png → Blue hay Yellow?
+
+Write down:
+  3.png: __________
+  capture_1.png: __________
+  capture_2.png: __________
+
+================================================================================
+IF ALL BLUE → FIX CLICK POINT (3 phút)
+================================================================================
+
+1. Open AutoClick
+2. Load Arena scenario
+3. Right-click first image → "Edit"
+4. Click "Pick Click Point"
+5. Click CENTER (giữa) của blue button
+6. Save
+7. Repeat for all images
+8. Close and open AutoClick
+9. Test
+
+================================================================================
+IF ANY YELLOW → RECAPTURE (5-10 phút)
+================================================================================
+
+1. Delete yellow images (Edit → Delete)
+2. Go to Dragon City
+3. Get to Arena screen, before clicking "Go to Menu"
+4. Open AutoClick
+5. Click "Add Image"
+6. Drag to crop ONLY the blue button
+   - Don't include yellow button nearby
+   - Include whole blue button
+   - Don't leave out any part
+7. Release
+8. Click "Pick Click Point"
+9. Click CENTER of button
+10. Save
+11. Close and open AutoClick
+12. Test
+
+================================================================================
+CURRENT ARENA.JSON CONFIGURATION
+================================================================================
+
+Found 3 images:
+1. capture_1.png
+   - Size: 133x40 (wide, bright)
+   - Click: (66, 20) ← Near center
+   - Threshold: 0.85
+
+2. capture_2.png
+   - Size: 28x33 (small, darker)
+   - Click: (14, 16) ← Near center
+   - Threshold: 0.85
+
+3. 3.png
+   - Size: 143x51 (wide, bright)
+   - Click: (71, 25) ← Near center
+   - Threshold: 0.85
+
+ANALYSIS:
+  - All click points are near center ✓
+  - But images might be WRONG button ✗
+  - Need visual verification
+
+================================================================================
+WHY SAME BUTTONS LOOK DIFFERENT
+================================================================================
+
+Two different buttons on Arena screen:
+
+🔵 Go to Menu
+  - Color: BLUE background
+  - Text: WHITE
+  - Position: TOP area
+  - Size: ~200px wide
+
+🟡 Quản Lý Kịch Bản
+  - Color: DARK background
+  - Text: YELLOW
+  - Position: BOTTOM area
+  - Size: Different
+
+They look COMPLETELY different, so:
+  ✅ If template is BLUE, it should ONLY match BLUE button
+  ✅ If it matches YELLOW button instead, template is WRONG
+
+================================================================================
+ACTION CHECKLIST
+================================================================================
+
+[ ] Step 1: Open File Explorer → Check PNG colors
+    Time: 1 minute
+    
+[ ] Step 2: Based on colors:
+    - All Blue? → Go to FIX CLICK POINT section
+    - Any Yellow? → Go to RECAPTURE section
+    Time: 3-10 minutes
+    
+[ ] Step 3: Verify changes
+    - Close and open AutoClick
+    - Load Arena scenario
+    - Press PLAY
+    Time: 1 minute
+
+[ ] Step 4: Test
+    - Does it click "Go to Menu"? ✅
+    - Or still wrong? ❌
+    
+[ ] Step 5: If needed
+    - Re-run steps 1-4
+    - Or recapture from scratch
+
+================================================================================
+MOST LIKELY SCENARIO
+================================================================================
+
+What probably happened:
+
+1. You were in Arena screen
+2. You saw both buttons:
+   - Blue "Go to Menu" button (top)
+   - Yellow "Quản Lý Kịch Bản" button (bottom)
+3. You captured, but got the WRONG area
+4. Template now matches yellow button instead of blue
+5. When AutoClick finds it, it clicks the yellow button
+
+FIX:
+  Delete and recapture, being VERY careful to get ONLY the blue button
+
+================================================================================
+VERIFICATION COMMANDS
+================================================================================
+
+If you want to verify programmatically:
+
+Run:
+  python CHECK_TEMPLATE_IMAGES.py
+  
+Output will show:
+  - Brightness of each image
+  - Likely button (BRIGHT = Go to Menu, DARK = Quản Lý Kịch Bản)
+
+Run:
+  python CHECK_CLICK_POINTS.py
+  
+Output will show:
+  - Click point position
+  - Whether it's in center or off
+
+================================================================================
+NEXT ACTIONS
+================================================================================
+
+1️⃣ Check Images (do this NOW)
+   Open File Explorer and view the PNG files
+   Report which are Blue and which are Yellow
+
+2️⃣ Fix Based on Results
+   Blue only? → Fix click points
+   Any Yellow? → Recapture
+
+3️⃣ Test
+   Restart AutoClick
+   Test scenario
+   Verify correct button clicked
+
+4️⃣ Report Back
+   Let me know if it works!
+
+================================================================================
+SUPPORT FILES CREATED
+================================================================================
+
+- FIX_WRONG_BUTTON_CLICK.md
+  → Complete guide with step-by-step instructions
+
+- ISSUE_ANALYSIS.md
+  → Detailed analysis of the problem
+
+- DIAGNOSE_WRONG_CLICK.py
+  → Diagnostic script
+
+- CHECK_TEMPLATE_IMAGES.py
+  → Verify what each image contains
+
+- CHECK_CLICK_POINTS.py
+  → Verify click point configuration
+
+================================================================================
+
+Status: Issue identified, solutions documented
+Action: Check PNG files NOW
+Timeline: 5-10 minutes to fix
+
+Go check your images! 🚀
+
+================================================================================

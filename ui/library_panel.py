@@ -25,6 +25,7 @@ from scenario.library import (
 from scenario.templates import update_history
 from ui.theme import *
 from ui.widgets import create_btn, create_card
+from ui.dialogs import ask_string_dialog
 
 
 def create_library_panel(parent):
@@ -155,7 +156,7 @@ def create_library_panel(parent):
         return current_game, selected_stages[0]
 
     def create_game_action():
-        name = simpledialog.askstring("Game moi", "Nhap ten game moi:", parent=state.UI.root)
+        name = ask_string_dialog("Game moi", "Nhap ten game moi:", parent=state.UI.root)
         if not name:
             return
         name = name.strip()
@@ -169,7 +170,7 @@ def create_library_panel(parent):
         current_game = require_current_game()
         if not current_game:
             return
-        new_name = simpledialog.askstring(
+        new_name = ask_string_dialog(
             "Sua ten game",
             "Nhap ten moi:",
             initialvalue=current_game,
@@ -204,7 +205,7 @@ def create_library_panel(parent):
         current_game = require_current_game()
         if not current_game:
             return
-        stage_name = simpledialog.askstring("Ai moi", "Nhap ten ai moi:", parent=state.UI.root)
+        stage_name = ask_string_dialog("Ai moi", "Nhap ten ai moi:", parent=state.UI.root)
         if not stage_name:
             return
         stage_name = stage_name.strip()
@@ -218,7 +219,7 @@ def create_library_panel(parent):
         current_game, stage_name = require_single_stage()
         if not current_game:
             return
-        new_name = simpledialog.askstring(
+        new_name = ask_string_dialog(
             "Copy ai",
             "Nhap ten ai moi:",
             initialvalue=f"{stage_name}_copy",
@@ -340,7 +341,7 @@ def create_library_panel(parent):
         )
         if not json_path:
             return
-        stage_name = simpledialog.askstring("Import scenario", "Nhap ten ai moi:", parent=state.UI.root)
+        stage_name = ask_string_dialog("Import scenario", "Nhap ten ai moi:", parent=state.UI.root)
         if not stage_name:
             return
         stage_name = stage_name.strip()
@@ -431,3 +432,4 @@ def create_library_panel(parent):
 
     state.run_library_selection = run_selected_stages
     return inner
+

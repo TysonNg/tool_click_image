@@ -6,6 +6,7 @@ from core import state
 from scenario.io import save_scenario_metadata
 from scenario.templates import _create_scrollable_form, create_image_template_via_user_flow, edit_existing_image_template, update_history
 from ui.theme import PKM_BG_CARD, PKM_BG_DARK, PKM_BG_INNER, PKM_BLUE, PKM_BLUE_DARK, PKM_GOLD, PKM_GREEN, PKM_RED, PKM_WHITE, PKM_YELLOW
+from ui.dialogs import _safe_destroy, _force_destroy
 
 
 def edit_scenario_details():
@@ -232,16 +233,16 @@ def edit_scenario_details():
 
                 persist_metadata()
                 refresh_template_list()
-                bulk_dialog.destroy()
+                _safe_destroy(bulk_dialog)
                 messagebox.showinfo("Thanh cong", f"Da cap nhat {len(image_templates)} anh.")
             except Exception as e:
                 messagebox.showerror("Loi", f"Loi: {e}")
 
         tk.Button(bulk_button_frame, text="Ap dung tat ca", command=apply_bulk_edit, bg=PKM_GREEN, fg="white", font=("Segoe UI", 11, "bold"), padx=30, pady=10, width=18).pack(side=tk.LEFT, padx=5, expand=True)
-        tk.Button(bulk_button_frame, text="Huy", command=bulk_dialog.destroy, bg=PKM_RED, fg="white", font=("Segoe UI", 11, "bold"), padx=30, pady=10, width=18).pack(side=tk.LEFT, padx=5, expand=True)
+        tk.Button(bulk_button_frame, text="Huy", command=lambda: _safe_destroy(bulk_dialog), bg=PKM_RED, fg="white", font=("Segoe UI", 11, "bold"), padx=30, pady=10, width=18).pack(side=tk.LEFT, padx=5, expand=True)
         bulk_dialog.bind("<Return>", apply_bulk_edit)
-        bulk_dialog.bind("<Escape>", lambda e: bulk_dialog.destroy())
-        bulk_dialog.protocol("WM_DELETE_WINDOW", bulk_dialog.destroy)
+        bulk_dialog.bind("<Escape>", lambda e: _safe_destroy(bulk_dialog))
+        bulk_dialog.protocol("WM_DELETE_WINDOW", lambda: _safe_destroy(bulk_dialog))
         bulk_dialog.transient(dialog)
         bulk_dialog.grab_set()
 
@@ -300,4 +301,5 @@ def edit_scenario_details():
     button_row2.pack(fill="x", pady=5)
     tk.Button(button_row2, text="Them Anh", command=add_new_template, bg=PKM_GREEN, fg=PKM_BG_DARK, font=("Segoe UI", 10, "bold"), padx=15, pady=8).pack(side=tk.LEFT, fill="x", expand=True, padx=3)
     tk.Button(button_row2, text="Sua Tat Ca", command=bulk_edit_all_images, bg=PKM_BLUE_DARK, fg=PKM_YELLOW, font=("Segoe UI", 10, "bold"), padx=15, pady=8).pack(side=tk.LEFT, fill="x", expand=True, padx=3)
-    tk.Button(button_row2, text="Dong", command=lambda: [dialog.destroy(), update_history()], bg=PKM_BLUE, fg=PKM_WHITE, font=("Segoe UI", 10, "bold"), padx=15, pady=8).pack(side=tk.RIGHT, fill="x", expand=True, padx=3)
+    tk.Button(button_row2, text="Dong", command=lambda: [_safe_destroy(dialog), update_history()], bg=PKM_BLUE, fg=PKM_WHITE, font=("Segoe UI", 10, "bold"), padx=15, pady=8).pack(side=tk.RIGHT, fill="x", expand=True, padx=3)
+

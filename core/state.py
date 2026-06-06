@@ -22,6 +22,14 @@ run_library_selection = None  # set by ui.library_panel — fn that builds queue
 search_region_enabled = False
 search_region = {"x1": 0, "y1": 0, "x2": 1920, "y2": 1080}
 
+# Relative coordinate capture
+game_hwnd = None
+game_window_title = None  # Store window title for reference
+captured_relative_x = 0
+captured_relative_y = 0
+captured_relative_percent_x = 0
+captured_relative_percent_y = 0
+
 
 class UI:
     """Widget references — populated after UI is created in main."""

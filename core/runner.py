@@ -7,7 +7,7 @@ import pyautogui
 from core import state
 from core.input import click, click_and_hold, double_click, press_key
 from core.state import set_status
-from core.vision import capture_screen_gray, find_best_match, get_search_region_screenshot
+from core.vision import capture_screen_gray, find_best_match_hybrid, get_search_region_screenshot
 from utils import safe_print
 
 
@@ -97,9 +97,12 @@ def find_and_click(queue_mode=False):
     run_result = "completed"
     try:
         loop_count = 0
+        last_step_failed = False  # Track if last step failed to retry next loop
         while state.running and (state.infinite_loop or loop_count < state.process_loops):
             safe_print(f"🟢 [THREAD] Loop {_format_loop_label(loop_count + 1)}")
             total_templates = len(state.templates)
+            last_step_failed = False  # Reset for this loop iteration
+            
             for tpl_index, tpl in enumerate(state.templates):
                 if not state.running:
                     break
@@ -115,9 +118,8 @@ def find_and_click(queue_mode=False):
                         max_attempts = float("inf")
                     elif wait_until_found and wait_timeout > 0:
                         max_attempts = wait_timeout * 10
-                    elif is_last_step:
-                        max_attempts = FINAL_IMAGE_GRACE_SECONDS * 10
                     else:
+                        # For all other cases (including last step without wait), just 1 attempt
                         max_attempts = 1
 
                     while state.running and attempt < max_attempts and not found:
@@ -131,7 +133,7 @@ def find_and_click(queue_mode=False):
                         candidate_masks = tpl.get("masks") or [tpl.get("mask")]
                         candidate_names = tpl.get("paths") or [tpl["path"]]
 
-                        match = find_best_match(
+                        match = find_best_match_hybrid(
                             screenshot,
                             candidate_images,
                             threshold=threshold,
@@ -171,7 +173,7 @@ def find_and_click(queue_mode=False):
                                 time.sleep(click_delay_after)
                                 count += 1
                                 if count < tpl["repeat"]:
-                                    time.sleep(0.1)
+                                    time.sleep(0)  # No gap between repeats
                         else:
                             if wait_until_found or is_last_step:
                                 attempt += 1
@@ -186,7 +188,7 @@ def find_and_click(queue_mode=False):
                                             f"⏳ Bước cuối chưa xuất hiện {tpl['path']}... ({attempt // 10}s/{FINAL_IMAGE_GRACE_SECONDS}s) "
                                             f"[best_score={match.score:.3f}, threshold={threshold}, scale={match.scale:.2f}x, template={match.template_name}]"
                                         )
-                                time.sleep(0.1)
+                                time.sleep(0)  # No gap in retry loop
                             else:
                                 attempt = max_attempts
 
@@ -196,30 +198,64 @@ def find_and_click(queue_mode=False):
                         else:
                             safe_print(f"⚠️ Timeout: Không tìm được {tpl['path']} sau {wait_timeout} giây")
                     elif not found:
-                        safe_print(f"❌ Không tìm được {tpl['path']}")
-                        if is_last_step:
-                            run_result = "failed"
-                            return run_result
+                        # If wait_until_found is False and it's not the last step, skip gracefully
+                        if not wait_until_found and not is_last_step:
+                            safe_print(f"⏭️ Bỏ qua (không chờ): {tpl['path']}")
+                        else:
+                            safe_print(f"❌ Không tìm được {tpl['path']}")
+                            if is_last_step:
+                                # Last step not found: mark for potential retry in next loop
+                                last_step_failed = True
+                                break  # Break from template loop to check if more loops available
 
                 elif tpl["type"] == "coord":
                     for i in range(tpl["repeat"]):
                         if not state.running:
                             break
+                        
+                        # Calculate absolute coordinates if relative
+                        click_x = tpl["x"]
+                        click_y = tpl["y"]
+                        
+                        if tpl.get("is_relative", False):
+                            # Get window info and convert relative to absolute
+                            try:
+                                from core.relative_capture import RelativeCoordinateCapture
+                                game_hwnd = tpl.get("game_hwnd")
+                                window_title = tpl.get("window_title")
+                                if not game_hwnd and window_title:
+                                    game_hwnd = RelativeCoordinateCapture.find_window_by_title(window_title)
+                                if game_hwnd:
+                                    # Temporarily set game_hwnd to get offset
+                                    old_hwnd = state.game_hwnd
+                                    state.game_hwnd = game_hwnd
+                                    win_info = RelativeCoordinateCapture.get_game_window_info()
+                                    state.game_hwnd = old_hwnd
+                                    
+                                    if win_info:
+                                        click_x = win_info['client_left'] + tpl["x"]
+                                        click_y = win_info['client_top'] + tpl["y"]
+                                        safe_print(f"📍 Relative→Absolute: ({tpl['x']}, {tpl['y']}) + ({win_info['client_left']}, {win_info['client_top']}) = ({click_x}, {click_y})")
+                            except Exception as e:
+                                safe_print(f"⚠️ Lỗi tính tọa độ relative: {e}")
+                                # Fallback to direct coordinates
+                                pass
+                        
                         click_type = tpl.get("click_type", "single")
                         if click_type == "double":
-                            double_click(tpl["x"], tpl["y"])
+                            double_click(click_x, click_y)
                             safe_print(f"🖱️ Double-clicked coordinate {tpl['path']}")
                         elif click_type == "hold":
-                            click_and_hold(tpl["x"], tpl["y"])
+                            click_and_hold(click_x, click_y)
                             safe_print(f"🖱️ Click-and-hold coordinate {tpl['path']}")
                         else:
-                            click(tpl["x"], tpl["y"])
+                            click(click_x, click_y)
                             safe_print(f"🖱️ Clicked coordinate {tpl['path']}")
 
                         delay_after = tpl.get("delay_after", 0.5)
                         time.sleep(delay_after)
                         if i < tpl["repeat"] - 1:
-                            time.sleep(0.1)
+                            time.sleep(0)  # No gap between repeats
 
                 elif tpl["type"] == "key":
                     for i in range(tpl["repeat"]):
@@ -238,7 +274,7 @@ def find_and_click(queue_mode=False):
                         delay_after = tpl.get("delay_after", 0.5)
                         time.sleep(delay_after)
                         if i < tpl["repeat"] - 1:
-                            time.sleep(0.1)
+                            time.sleep(0)  # No gap between repeats
 
                 if state.running:
                     time.sleep(tpl.get("delay", state.click_delay))
@@ -246,6 +282,11 @@ def find_and_click(queue_mode=False):
             loop_count += 1
             if state.running and (state.infinite_loop or loop_count < state.process_loops):
                 safe_print(f"🔄 Loop {_format_loop_label(loop_count)} completed")
+            elif last_step_failed:
+                # No more loops left and last step failed
+                safe_print(f"❌ Hết vòng lặp, lần cuối cùng bước cuối không tìm được hình. Scenario thất bại.")
+                run_result = "failed"
+                break  # Exit main loop
 
         if not state.running:
             run_result = "stopped"

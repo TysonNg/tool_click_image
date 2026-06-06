@@ -84,12 +84,15 @@ def _serialize_template_list(templates_source, base_dir=None):
         else:
             templates.append({
                 "type": "coord",
-                "x": tpl["x"],
-                "y": tpl["y"],
-                "repeat": tpl["repeat"],
+                "x": tpl.get("x", 0),
+                "y": tpl.get("y", 0),
+                "repeat": tpl.get("repeat", 1),
                 "delay": tpl.get("delay", state.click_delay),
                 "click_type": tpl.get("click_type", "single"),
                 "delay_after": tpl.get("delay_after", 0.5),
+                "is_relative": tpl.get("is_relative", False),
+                "game_hwnd": tpl.get("game_hwnd"),
+                "window_title": tpl.get("window_title"),
             })
     return templates
 
@@ -278,6 +281,9 @@ def load_templates_from_file(file_path, prompt_for_missing=True):
                 "delay": tpl.get("delay", scenario.get("click_delay", state.click_delay)),
                 "click_type": tpl.get("click_type", "single"),
                 "delay_after": tpl.get("delay_after", 0.5),
+                "is_relative": tpl.get("is_relative", False),
+                "game_hwnd": tpl.get("game_hwnd"),
+                "window_title": tpl.get("window_title"),
                 "path": f"({tpl.get('x', 0)},{tpl.get('y', 0)})",
             })
 
@@ -374,6 +380,45 @@ def load_multiple_scenarios():
         failed_list = ", ".join(os.path.basename(path) for path in failed_files)
         state.UI.status_label.config(text=f"Khong tai duoc kich ban nao. File loi: {failed_list}.")
         messagebox.showerror("Loi tai kich ban", f"Khong tai duoc bat ky kich ban nao.\n{failed_list}")
+
+
+def load_scenario_combo():
+    """Load multiple scenarios to queue (always append, never replace)
+    - User selects 1 or more files
+    - All files are loaded into queue and run in sequence
+    """
+    from scenario.templates import update_history
+
+    file_paths = filedialog.askopenfilenames(
+        filetypes=[("AutoClick Scenario", "*.json"), ("All files", "*.*")],
+        title="Chọn kịch bản để chạy (1 hoặc nhiều file)",
+    )
+    file_paths = list(file_paths) if file_paths else []
+    if not file_paths:
+        return
+
+    failed_files = []
+    safe_print(f"📋 [DEBUG] Selected {len(file_paths)} scenario files to add")
+
+    for file_path in file_paths:
+        try:
+            safe_print(f"📋 [DEBUG] Loading scenario: {file_path}")
+            _scenario, _templates, metadata = load_templates_from_file(file_path, prompt_for_missing=True)
+            state.scenario_metadata.append(metadata)
+            state.scenario_queue.append(file_path)
+        except Exception as exc:
+            failed_files.append(file_path)
+            safe_print(f"⚠️ Lỗi tải kịch bản {file_path}: {exc}")
+
+    if state.scenario_metadata:
+        update_history()
+        state.UI.status_label.config(
+            text=f"✅ Tổng {len(state.scenario_metadata)} kịch bản. Bấm 'TUNG POKÉBALL!' để chạy."
+        )
+    elif failed_files:
+        failed_list = ", ".join(os.path.basename(path) for path in failed_files)
+        state.UI.status_label.config(text=f"❌ Không tải được kịch bản nào. File lỗi: {failed_list}.")
+        messagebox.showerror("Lỗi tải kịch bản", f"Không tải được bất kỳ kịch bản nào.\n{failed_list}")
 
 
 def clear_scenarios():

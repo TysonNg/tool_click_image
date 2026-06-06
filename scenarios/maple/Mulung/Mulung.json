@@ -7,56 +7,133 @@
       "type": "image",
       "path": "1.png",
       "repeat": 1,
-      "delay": 1.0,
+      "delay": 2.0,
+      "wait_until_found": true,
+      "wait_timeout": -1,
+      "threshold": 0.7,
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 67,
+      "click_y": 83,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "2.0.png",
+      "repeat": 1,
+      "delay": 2.0,
       "wait_until_found": true,
       "wait_timeout": 30,
-      "threshold": 0.7,
-      "click_delay": 1.0,
-      "click_type": "single"
+      "threshold": 0.9,
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 84,
+      "click_y": 20,
+      "mask_path": null
     },
     {
       "type": "image",
       "path": "2.png",
       "repeat": 2,
-      "delay": 1.0,
+      "delay": 2.0,
       "wait_until_found": true,
       "wait_timeout": -1,
       "threshold": 0.7,
-      "click_delay": 1.0,
-      "click_type": "single"
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 82,
+      "click_y": 18,
+      "mask_path": null
     },
     {
       "type": "image",
       "path": "3.png",
       "repeat": 1,
-      "delay": 1.0,
+      "delay": 2.0,
       "wait_until_found": true,
       "wait_timeout": -1,
       "threshold": 0.7,
-      "click_delay": 1.0,
-      "click_type": "single"
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 82,
+      "click_y": 20,
+      "mask_path": null
     },
     {
       "type": "image",
       "path": "4.png",
       "repeat": 1,
-      "delay": 1.0,
+      "delay": 2.0,
       "wait_until_found": true,
       "wait_timeout": -1,
-      "threshold": 0.7,
-      "click_delay": 1.0,
-      "click_type": "single"
+      "threshold": 0.9,
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 71,
+      "click_y": 20,
+      "mask_path": null
     },
     {
       "type": "image",
       "path": "5.png",
-      "repeat": 1,
-      "delay": 1.0,
+      "repeat": 3,
+      "delay": 3.0,
       "wait_until_found": true,
       "wait_timeout": -1,
-      "threshold": 0.7,
-      "click_delay": 1.0,
-      "click_type": "single"
+      "threshold": 0.9,
+      "click_delay": 2.0,
+      "click_type": "double",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 26,
+      "click_y": 26,
+      "mask_path": null
     }
   ]
 }
