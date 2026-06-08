@@ -1,6 +1,8 @@
 import json
 import os
 import shutil
+import time
+import gc
 
 
 SCENARIOS_ROOT = os.path.normpath(
@@ -80,11 +82,82 @@ def create_game(name):
 
 
 def rename_game(old_name, new_name):
-    os.rename(_game_dir(old_name), _game_dir(new_name))
+    """Rename game directory with retry logic for permission errors"""
+    old_path = _game_dir(old_name)
+    new_path = _game_dir(new_name)
+    
+    # Retry logic for Windows permission issues
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            # Force garbage collection to release any file handles
+            gc.collect()
+            time.sleep(0.1)
+            
+            # Try direct rename
+            os.rename(old_path, new_path)
+            return
+        except PermissionError as e:
+            if attempt < max_retries - 1:
+                # Wait before retry
+                time.sleep(0.5)
+                continue
+            else:
+                # Final attempt: try copy + delete
+                try:
+                    # Create temp dir first
+                    temp_path = new_path + "_temp"
+                    if os.path.exists(temp_path):
+                        shutil.rmtree(temp_path)
+                    
+                    # Copy directory
+                    shutil.copytree(old_path, temp_path)
+                    
+                    # Delete original
+                    shutil.rmtree(old_path)
+                    
+                    # Rename temp to final
+                    os.rename(temp_path, new_path)
+                    return
+                except Exception as copy_err:
+                    raise PermissionError(
+                        f"Không thể đổi tên thư mục '{old_name}' sang '{new_name}'. "
+                        f"Có thể thư mục đang được sử dụng. "
+                        f"Hãy đóng AutoClick hoặc game window và thử lại. "
+                        f"Lỗi: {e}"
+                    ) from e
+        except Exception as e:
+            raise e
 
 
 def delete_game(name):
-    shutil.rmtree(_game_dir(name))
+    """Delete game directory with retry logic for permission errors"""
+    game_path = _game_dir(name)
+    
+    # Retry logic for Windows permission issues
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            # Force garbage collection to release any file handles
+            gc.collect()
+            time.sleep(0.1)
+            
+            # Try direct delete
+            shutil.rmtree(game_path)
+            return
+        except PermissionError as e:
+            if attempt < max_retries - 1:
+                # Wait before retry
+                time.sleep(0.5)
+                continue
+            else:
+                raise PermissionError(
+                    f"Không thể xóa game '{name}'. Có thể thư mục đang được sử dụng. "
+                    f"Hãy đóng AutoClick hoặc game window và thử lại. "
+                    f"Lỗi: {e}"
+                ) from e
+        except Exception as e:
+            raise e
 
 
 def create_stage(game, stage_name):
@@ -92,11 +165,64 @@ def create_stage(game, stage_name):
 
 
 def delete_stage(game, stage_name):
-    shutil.rmtree(_stage_dir(game, stage_name))
+    """Delete stage directory with retry logic for permission errors"""
+    stage_path = _stage_dir(game, stage_name)
+    
+    # Retry logic for Windows permission issues
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            # Force garbage collection to release any file handles
+            gc.collect()
+            time.sleep(0.1)
+            
+            # Try direct delete
+            shutil.rmtree(stage_path)
+            return
+        except PermissionError as e:
+            if attempt < max_retries - 1:
+                # Wait before retry
+                time.sleep(0.5)
+                continue
+            else:
+                raise PermissionError(
+                    f"Không thể xóa stage '{stage_name}'. Có thể thư mục đang được sử dụng. "
+                    f"Hãy đóng AutoClick hoặc game window và thử lại. "
+                    f"Lỗi: {e}"
+                ) from e
+        except Exception as e:
+            raise e
 
 
 def copy_stage(game, stage_name, new_name):
-    shutil.copytree(_stage_dir(game, stage_name), _stage_dir(game, new_name))
+    """Copy stage directory with retry logic for permission errors"""
+    src_path = _stage_dir(game, stage_name)
+    dst_path = _stage_dir(game, new_name)
+    
+    # Retry logic for Windows permission issues
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            # Force garbage collection to release any file handles
+            gc.collect()
+            time.sleep(0.1)
+            
+            # Try direct copy
+            shutil.copytree(src_path, dst_path)
+            return
+        except PermissionError as e:
+            if attempt < max_retries - 1:
+                # Wait before retry
+                time.sleep(0.5)
+                continue
+            else:
+                raise PermissionError(
+                    f"Không thể copy stage '{stage_name}'. Có thể thư mục đang được sử dụng. "
+                    f"Hãy đóng AutoClick hoặc game window và thử lại. "
+                    f"Lỗi: {e}"
+                ) from e
+        except Exception as e:
+            raise e
 
 
 def copy_image_to_stage(game, stage, src_path):

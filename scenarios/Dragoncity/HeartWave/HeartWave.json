@@ -10,7 +10,7 @@
       "delay": 0.0,
       "wait_until_found": false,
       "wait_timeout": 0,
-      "threshold": 0.7,
+      "threshold": 0.9,
       "click_delay": 0.0,
       "click_type": "single",
       "search_region_enabled": false,
@@ -32,7 +32,7 @@
       "delay": 0.0,
       "wait_until_found": false,
       "wait_timeout": 0,
-      "threshold": 0.85,
+      "threshold": 0.9,
       "click_delay": 0.0,
       "click_type": "single",
       "search_region_enabled": false,
@@ -44,7 +44,8 @@
       },
       "click_point_mode": "center",
       "click_x": 78,
-      "click_y": 18
+      "click_y": 18,
+      "mask_path": null
     },
     {
       "type": "image",
@@ -53,7 +54,7 @@
       "delay": 0.0,
       "wait_until_found": false,
       "wait_timeout": 0,
-      "threshold": 0.85,
+      "threshold": 0.9,
       "click_delay": 0.0,
       "click_type": "single",
       "search_region_enabled": false,
@@ -65,7 +66,8 @@
       },
       "click_point_mode": "center",
       "click_x": 99,
-      "click_y": 19
+      "click_y": 19,
+      "mask_path": null
     },
     {
       "type": "image",
@@ -74,7 +76,7 @@
       "delay": 0.0,
       "wait_until_found": false,
       "wait_timeout": 0,
-      "threshold": 0.85,
+      "threshold": 0.9,
       "click_delay": 0.0,
       "click_type": "single",
       "search_region_enabled": false,
@@ -86,7 +88,8 @@
       },
       "click_point_mode": "center",
       "click_x": 71,
-      "click_y": 24
+      "click_y": 24,
+      "mask_path": null
     },
     {
       "type": "image",
@@ -95,7 +98,7 @@
       "delay": 0.0,
       "wait_until_found": false,
       "wait_timeout": 0,
-      "threshold": 0.85,
+      "threshold": 0.9,
       "click_delay": 0.0,
       "click_type": "single",
       "search_region_enabled": false,
@@ -107,7 +110,8 @@
       },
       "click_point_mode": "center",
       "click_x": 115,
-      "click_y": 19
+      "click_y": 19,
+      "mask_path": null
     },
     {
       "type": "image",
@@ -116,7 +120,7 @@
       "delay": 0.0,
       "wait_until_found": false,
       "wait_timeout": 0,
-      "threshold": 0.85,
+      "threshold": 0.9,
       "click_delay": 0.0,
       "click_type": "single",
       "search_region_enabled": false,
@@ -128,7 +132,8 @@
       },
       "click_point_mode": "center",
       "click_x": 68,
-      "click_y": 22
+      "click_y": 22,
+      "mask_path": null
     },
     {
       "type": "image",
@@ -137,7 +142,7 @@
       "delay": 0.0,
       "wait_until_found": false,
       "wait_timeout": 0,
-      "threshold": 0.85,
+      "threshold": 0.9,
       "click_delay": 0.0,
       "click_type": "single",
       "search_region_enabled": false,
@@ -149,7 +154,8 @@
       },
       "click_point_mode": "center",
       "click_x": 66,
-      "click_y": 22
+      "click_y": 22,
+      "mask_path": null
     },
     {
       "type": "image",
@@ -158,7 +164,7 @@
       "delay": 0.0,
       "wait_until_found": false,
       "wait_timeout": 0,
-      "threshold": 0.85,
+      "threshold": 0.9,
       "click_delay": 0.0,
       "click_type": "single",
       "search_region_enabled": false,
@@ -170,7 +176,8 @@
       },
       "click_point_mode": "center",
       "click_x": 83,
-      "click_y": 23
+      "click_y": 23,
+      "mask_path": null
     }
   ]
 }

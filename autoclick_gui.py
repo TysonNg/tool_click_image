@@ -154,6 +154,16 @@ def set_target_window():
                     )
                     
                     safe_print(f"✅ Window đích: {window_info['title']} (HWND: {state.game_hwnd})")
+                    
+                    # UPDATE title bar to show target window indicator
+                    _update_root_title()
+                    
+                    # UPDATE scenario panel display
+                    _update_target_window_display()
+                    
+                    # HIGHLIGHT window to show it's target
+                    _highlight_target_window()
+                    
             except Exception as e:
                 messagebox.showerror("❌ Lỗi", f"Lỗi khi xác định cửa sổ: {e}")
                 return
@@ -166,6 +176,50 @@ def set_target_window():
     import threading
     thread = threading.Thread(target=setup_thread, daemon=True)
     thread.start()
+
+
+def _highlight_target_window():
+    """Highlight target window with flash and bring to front"""
+    if not state.game_hwnd:
+        return
+    
+    try:
+        hwnd = state.game_hwnd
+        
+        # Bring window to front
+        win32gui.SetForegroundWindow(hwnd)
+        
+        # Flash window to attract attention using ctypes (more reliable)
+        try:
+            import ctypes
+            from ctypes import wintypes
+            
+            # Define FlashWindowEx structure
+            class FLASHWINFO(ctypes.Structure):
+                _fields_ = [
+                    ("cbSize", wintypes.UINT),
+                    ("hwnd", wintypes.HWND),
+                    ("dwFlags", wintypes.UINT),
+                    ("uCount", wintypes.UINT),
+                    ("dwTimeout", wintypes.DWORD)
+                ]
+            
+            FLASHW_ALL = 0x03
+            
+            fwi = FLASHWINFO()
+            fwi.cbSize = ctypes.sizeof(FLASHWINFO)
+            fwi.hwnd = hwnd
+            fwi.dwFlags = FLASHW_ALL
+            fwi.uCount = 3
+            fwi.dwTimeout = 200
+            
+            ctypes.windll.user32.FlashWindowEx(ctypes.byref(fwi))
+            safe_print("✅ Target window highlighted (flashed 3x)")
+        except Exception as e:
+            safe_print(f"⚠️ Flash failed: {e}")
+        
+    except Exception as e:
+        safe_print(f"⚠️ Highlight failed: {e}")
 
 
 # ════════════════════════════════════════════════════════════
@@ -260,7 +314,36 @@ def capture_relative_coordinates():
 #  ROOT WINDOW
 # ════════════════════════════════════════════════════════════
 root = tk.Tk()
-root.title("⚡ PokéClick PRO — Hệ thống Tự Động Chiến Đấu")
+
+# Function to update title with target window indicator
+def _update_root_title():
+    """Update root window title to show target window status"""
+    base_title = "⚡ PokéClick PRO — Hệ thống Tự Động Chiến Đấu"
+    if state.game_hwnd and state.game_window_title:
+        root.title(f"{base_title} | 🎯 TARGET: {state.game_window_title}")
+    else:
+        root.title(base_title)
+
+
+def _update_target_window_display():
+    """Update target window status display in scenario panel"""
+    if state.game_hwnd and state.game_window_title:
+        state.UI.target_window_text.set(f"🎯 Cửa sổ đích: {state.game_window_title}")
+    else:
+        state.UI.target_window_text.set("🎯 Cửa sổ đích: Chưa xác định")
+
+
+def clear_target_window():
+    """Clear target window setting"""
+    state.game_hwnd = None
+    state.game_window_title = None
+    _update_root_title()
+    _update_target_window_display()
+    safe_print("❌ Đã bỏ cửa sổ đích")
+    messagebox.showinfo("ℹ️ Thông báo", "Đã bỏ cửa sổ đích")
+
+# Initial title
+_update_root_title()
 
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
@@ -635,9 +718,19 @@ else:
     lucario_canvas.create_text(190, 60, text="Lucario Ready for Battle!",
                                font=("Segoe UI", 14, "bold"), fill=PKM_YELLOW)
 
+# Target window status
+target_window_frame = tk.Frame(queue_inner, bg=PKM_BG_CARD, relief="flat", bd=0)
+target_window_frame.pack(fill="x", pady=(4, 2), padx=0)
+
+target_window_text = tk.StringVar(value="🎯 Cửa sổ đích: Chưa xác định")
+state.UI.target_window_text = target_window_text
+tk.Label(target_window_frame, textvariable=target_window_text,
+         font=("Segoe UI", 8), bg=PKM_BG_CARD, fg=PKM_GOLD,
+         anchor="center", justify="center", wraplength=360).pack(fill="x", padx=4, pady=2)
+
 # Setup info
 setup_info_frame = tk.Frame(queue_inner, bg=PKM_BG_CARD, relief="flat", bd=0)
-setup_info_frame.pack(fill="x", pady=(4, 4), padx=0)
+setup_info_frame.pack(fill="x", pady=(2, 4), padx=0)
 
 setup_info_text = tk.StringVar(value="🔄 Vòng lặp: 1  |  ⚡ Tốc độ: 1.0s")
 state.UI.setup_info_text = setup_info_text
@@ -697,8 +790,16 @@ row3.pack(fill="both", expand=True, pady=1, padx=0)
 create_btn(row3, "📋  Quản Lý Kịch Bản", edit_scenario_details,
            bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
            ).pack(side="left", fill="both", expand=True, padx=(0, 2), ipady=5)
-create_btn(row3, "🗑️  Xóa Sạch", clear_all_items,
+
+row3_buttons = tk.Frame(row3, bg=PKM_BG_CARD)
+row3_buttons.pack(side="right", fill="both", expand=True, padx=(2, 0))
+
+create_btn(row3_buttons, "🗑️  Xóa Sạch", clear_all_items,
            bg=PKM_RED, fg=PKM_WHITE, hover_bg=PKM_RED_LIGHT
+           ).pack(side="left", fill="both", expand=True, padx=(0, 2), ipady=5)
+
+create_btn(row3_buttons, "❌  Bỏ Cửa sổ Đích", clear_target_window,
+           bg=PKM_GOLD, fg=PKM_BG_DARK, hover_bg="#ff8c3d"
            ).pack(side="right", fill="both", expand=True, padx=(2, 0), ipady=5)
 
 # ════════════════════════════════════════════════════════════

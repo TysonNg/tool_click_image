@@ -181,9 +181,16 @@ def create_library_panel(parent):
         new_name = new_name.strip()
         if not new_name or new_name == current_game:
             return
-        rename_game(current_game, new_name)
-        refresh_games(selected_game=new_name, selected_stages=[])
-        set_status(f"Da doi ten game: {current_game} -> {new_name}")
+        try:
+            rename_game(current_game, new_name)
+            refresh_games(selected_game=new_name, selected_stages=[])
+            set_status(f"Da doi ten game: {current_game} -> {new_name}")
+        except PermissionError as e:
+            messagebox.showerror("❌ Lỗi", f"Không thể đổi tên game:\n\n{str(e)}")
+            set_status(f"❌ Lỗi đổi tên game: {current_game}")
+        except Exception as e:
+            messagebox.showerror("❌ Lỗi", f"Lỗi không mong muốn:\n\n{str(e)}")
+            set_status(f"❌ Lỗi: {str(e)}")
 
     def delete_game_action():
         current_game = require_current_game()
@@ -197,9 +204,16 @@ def create_library_panel(parent):
             parent=state.UI.root,
         ):
             return
-        delete_game(current_game)
-        refresh_games()
-        set_status(f"Da xoa game: {current_game}")
+        try:
+            delete_game(current_game)
+            refresh_games()
+            set_status(f"Da xoa game: {current_game}")
+        except PermissionError as e:
+            messagebox.showerror("❌ Lỗi", f"Không thể xóa game:\n\n{str(e)}")
+            set_status(f"❌ Lỗi xóa game: {current_game}")
+        except Exception as e:
+            messagebox.showerror("❌ Lỗi", f"Lỗi không mong muốn:\n\n{str(e)}")
+            set_status(f"❌ Lỗi: {str(e)}")
 
     def create_stage_action():
         current_game = require_current_game()
@@ -230,9 +244,16 @@ def create_library_panel(parent):
         new_name = new_name.strip()
         if not new_name:
             return
-        copy_stage(current_game, stage_name, new_name)
-        refresh_games(selected_game=current_game, selected_stages=[new_name])
-        set_status(f"Da copy ai: {stage_name} -> {new_name}")
+        try:
+            copy_stage(current_game, stage_name, new_name)
+            refresh_games(selected_game=current_game, selected_stages=[new_name])
+            set_status(f"Da copy ai: {stage_name} -> {new_name}")
+        except PermissionError as e:
+            messagebox.showerror("❌ Lỗi", f"Không thể copy stage:\n\n{str(e)}")
+            set_status(f"❌ Lỗi copy stage: {stage_name}")
+        except Exception as e:
+            messagebox.showerror("❌ Lỗi", f"Lỗi không mong muốn:\n\n{str(e)}")
+            set_status(f"❌ Lỗi: {str(e)}")
 
     def delete_stage_action():
         current_game, stage_name = require_single_stage()
@@ -240,9 +261,16 @@ def create_library_panel(parent):
             return
         if not messagebox.askyesno("Xoa ai", f"Xoa ai '{stage_name}'?", parent=state.UI.root):
             return
-        delete_stage(current_game, stage_name)
-        refresh_games(selected_game=current_game, selected_stages=[])
-        set_status(f"Da xoa ai: {stage_name}")
+        try:
+            delete_stage(current_game, stage_name)
+            refresh_games(selected_game=current_game, selected_stages=[])
+            set_status(f"Da xoa ai: {stage_name}")
+        except PermissionError as e:
+            messagebox.showerror("❌ Lỗi", f"Không thể xóa stage:\n\n{str(e)}")
+            set_status(f"❌ Lỗi xóa stage: {stage_name}")
+        except Exception as e:
+            messagebox.showerror("❌ Lỗi", f"Lỗi không mong muốn:\n\n{str(e)}")
+            set_status(f"❌ Lỗi: {str(e)}")
 
     def load_stage_into_editor():
         current_game, stage_name = require_single_stage()

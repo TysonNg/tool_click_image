@@ -39,6 +39,7 @@ class UI:
     status_label = None
     history_list = None
     setup_info_text = None
+    target_window_text = None
     btn_hotkey_start = None
     btn_hotkey_stop = None
     btn_human_mode = None

@@ -10,8 +10,8 @@ from core import state
 
 
 # Enhanced thresholds for better accuracy
-DEFAULT_THRESHOLD = 0.70  # Practical threshold for real-world scenarios (previously 0.85 too strict, 0.75 still high)
-RECOMMENDED_MIN_THRESHOLD = 0.65  # Minimum recommended threshold
+DEFAULT_THRESHOLD = 0.75  # Raised from 0.70 for more consistency (was too lenient)
+RECOMMENDED_MIN_THRESHOLD = 0.70  # Minimum recommended threshold
 DEFAULT_BLUR_KSIZE = (3, 3)
 DEFAULT_SCALE_START = 0.70
 DEFAULT_SCALE_END = 1.30
@@ -91,22 +91,23 @@ def scale_values(
 
 def _default_scales() -> list[float]:
     """
-    OPTIMIZED: Reduced scale range for faster searching.
-    Precision mode: Focus on scale 1.0 ± 5% (most common)
-    Normal mode: Wider range but still optimized
+    OPTIMIZED: Reduced scale range for faster + more consistent searching.
+    
+    Key insight: Most images are at scale 0.95-1.05
+    Order by distance from 1.0 for best matches first
     """
     if getattr(state, "precision_mode", True):
-        # OPTIMIZATION: Most images are at scale 0.95-1.05
-        # Focus there first, then expand if needed
-        scales = [1.0]  # Primary: exact scale
-        scales.extend([0.95, 1.05])  # Secondary: ±5%
-        scales.extend([0.90, 1.10])  # Tertiary: ±10%
-        scales.extend([0.85, 1.15])  # Extended: ±15%
+        # Precision mode: Very few scales, focus on exact match
+        scales = [1.0]  # Exact match FIRST (most reliable)
+        scales.extend([0.98, 1.02])  # ±2% (very close)
+        scales.extend([0.95, 1.05])  # ±5% (common)
         return sorted(list(set([round(s, 4) for s in scales])), key=lambda x: abs(x - 1.0))
     
-    # Normal mode: OPTIMIZED to 9 scales instead of 13
-    scales = [1.0]  # Scale gốc trước
-    scales.extend(scale_values(0.80, 1.20, 0.10))  # Wider range, fewer steps
+    # Normal mode: Moderate scales, sorted by distance from 1.0
+    scales = [1.0]  # Primary: exact scale
+    scales.extend([0.95, 1.05])  # Secondary: ±5%
+    scales.extend([0.90, 1.10])  # Tertiary: ±10%
+    scales.extend([0.85, 1.15])  # Extended: ±15%
     return sorted(list(set([round(s, 4) for s in scales])), key=lambda x: abs(x - 1.0))
 
 
@@ -207,8 +208,15 @@ def find_best_match(
     masks: list[np.ndarray | None] | None = None,
 ) -> MatchResult:
     """
-    Standard matching - reliable baseline.
-    Uses TM_CCOEFF_NORMED with multi-scale searching.
+    Stable matching - NO preprocessing blur (causes inconsistent scores).
+    Uses RAW PIXEL MATCHING for reliability.
+    
+    Why no blur:
+    - Blur changes based on surrounding pixels
+    - Surrounding pixels change between runs
+    - Results in different scores for same image
+    
+    Solution: Match raw pixels directly + multi-scale
     """
     if not templates:
         return _build_match_result(
@@ -227,8 +235,8 @@ def find_best_match(
     if scales is None:
         scales = _default_scales()
 
-    processed_screen = preprocess_to_gray_blur(screen_gray, enhance_contrast=False)
-    screen_h, screen_w = processed_screen.shape[:2]
+    # NO preprocessing - use raw grayscale directly
+    screen_h, screen_w = screen_gray.shape[:2]
 
     if template_names is None:
         template_names = [f"template_{idx}" for idx in range(len(templates))]
@@ -249,8 +257,8 @@ def find_best_match(
             if matched_w < 4 or matched_h < 4:
                 continue
 
-            processed_template = preprocess_to_gray_blur(resized_template, enhance_contrast=False)
-            score, max_loc, method_name = match_single(processed_screen, processed_template, resized_mask)
+            # Match raw pixels (NO blur preprocessing)
+            score, max_loc, method_name = match_single(screen_gray, resized_template, resized_mask)
             result = _build_match_result(
                 score=score,
                 scale=scale,
@@ -296,17 +304,9 @@ def find_best_match_hybrid(
     masks: list[np.ndarray | None] | None = None,
 ) -> MatchResult:
     """
-    Hybrid matching - delegates to find_best_match (simpler and more reliable).
-    
-    This matches images by:
-    1. Trying exact scale first (fast path)
-    2. Then trying multiple scales with blur
-    3. Returning best match above threshold
-    
-    Performance: ~25-40ms average
-    Reliability: High (no false matches)
+    Stable hybrid - just calls find_best_match (raw pixel matching).
+    No preprocessing = consistent scores every time.
     """
-    # Use standard find_best_match for simplicity and reliability
     return find_best_match(
         screen_gray,
         templates,
