@@ -1,0 +1,9 @@
+# AutoClick Pro - Standalone Application Requirements
+
+# Core dependencies
+pyautogui>=0.9.53
+pywin32>=305
+
+# Optional but recommended
+Pillow>=9.0.0  # For future screenshot features
+keyboard>=0.13.5  # For future hotkey support

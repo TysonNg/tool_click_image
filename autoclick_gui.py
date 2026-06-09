@@ -177,7 +177,6 @@ def set_target_window():
     thread = threading.Thread(target=setup_thread, daemon=True)
     thread.start()
 
-
 def _highlight_target_window():
     """Highlight target window with flash and bring to front"""
     if not state.game_hwnd:
@@ -274,11 +273,12 @@ def capture_relative_coordinates():
                         'y': config['y'],
                         'repeat': config['repeat'],
                         'click_type': config['click_type'],
+                        'delay_before': config.get('delay_before', 0),  # Add delay before click
                         'delay_after': config['delay_after'],
                         'is_relative': True,  # Mark as relative coordinate
                         'game_hwnd': state.game_hwnd,  # Store window handle
                         'window_title': window_info['title'],  # Store window title for reference
-                        'path': f"📍 ({config['x']}, {config['y']}) [{percent_x:.1f}%, {percent_y:.1f}%] ({config['click_type']}, {config['delay_after']}s)"
+                        'path': f"📍 ({config['x']}, {config['y']}) [{percent_x:.1f}%, {percent_y:.1f}%] ({config['click_type']}, {config.get('delay_before', 0)}s+{config['delay_after']}s)"
                     }
                     
                     state.templates.append(template)
@@ -287,12 +287,12 @@ def capture_relative_coordinates():
                     # Update status
                     state.UI.status_label.config(
                         text=f"✅ Đã thêm: Tọa độ ({config['x']}, {config['y']}) | "
-                             f"Click: {config['click_type']} | Delay: {config['delay_after']}s",
+                             f"Click: {config['click_type']} | Delay trước: {config.get('delay_before', 0)}s | Delay sau: {config['delay_after']}s",
                         fg=PKM_GREEN_LT
                     )
                     
                     safe_print(f"✅ Đã thêm tọa độ tương đối: ({config['x']}, {config['y']}) "
-                              f"| {config['click_type']} | {config['delay_after']}s")
+                              f"| {config['click_type']} | Trước: {config.get('delay_before', 0)}s | Sau: {config['delay_after']}s")
                     
                 except Exception as e:
                     safe_print(f"❌ Lỗi: {e}")
@@ -347,11 +347,13 @@ _update_root_title()
 
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-window_width = max(800, min(1400, int(screen_width * 0.7)))
-window_height = max(600, min(1000, int(screen_height * 0.75)))
-root.geometry(f"{window_width}x{window_height}")
+# Set smaller window size and position on left side
+window_width = 450  # Smaller width (compact sidebar)
+window_height = max(600, min(800, int(screen_height * 0.85)))
+# Position on left side: x=10, y=50
+root.geometry(f"{window_width}x{window_height}+10+50")
 root.resizable(True, True)
-root.minsize(700, 500)  # Set minimum window size to prevent UI breaking
+root.minsize(400, 500)  # Set minimum window size to prevent UI breaking
 root.configure(bg=PKM_BG_MAIN)
 root.base_width = window_width
 root.base_height = window_height

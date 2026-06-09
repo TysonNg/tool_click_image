@@ -89,6 +89,7 @@ def _serialize_template_list(templates_source, base_dir=None):
                 "repeat": tpl.get("repeat", 1),
                 "delay": tpl.get("delay", state.click_delay),
                 "click_type": tpl.get("click_type", "single"),
+                "delay_before": tpl.get("delay_before", 0),
                 "delay_after": tpl.get("delay_after", 0.5),
                 "is_relative": tpl.get("is_relative", False),
                 "game_hwnd": tpl.get("game_hwnd"),
@@ -102,12 +103,16 @@ def _serialize_templates(base_dir=None):
 
 
 def _build_scenario_payload(base_dir=None):
-    return {
+    payload = {
         "process_loops": state.process_loops,
         "infinite_loop": state.infinite_loop,
         "click_delay": state.click_delay,
         "templates": _serialize_template_list(state.templates, base_dir=base_dir),
     }
+    # Lưu target window nếu có
+    if state.game_hwnd and state.game_window_title:
+        payload["game_window_title"] = state.game_window_title
+    return payload
 
 
 def _build_metadata_payload(metadata):
@@ -117,12 +122,17 @@ def _build_metadata_payload(metadata):
     if process_loops < 1:
         process_loops = 1
     click_delay = float(metadata.get("click_delay", 1.0) or 1.0)
-    return {
+    
+    payload = {
         "process_loops": process_loops,
         "infinite_loop": bool(metadata.get("infinite_loop", False)),
         "click_delay": click_delay,
         "templates": _serialize_template_list(metadata.get("templates", []), base_dir=base_dir),
     }
+    # Lưu target window nếu có
+    if metadata.get("game_window_title"):
+        payload["game_window_title"] = metadata.get("game_window_title")
+    return payload
 
 
 def save_scenario_metadata(metadata):
@@ -131,6 +141,20 @@ def save_scenario_metadata(metadata):
     with open(file_path, "w", encoding="utf-8") as file_obj:
         json.dump(payload, file_obj, ensure_ascii=False, indent=2)
     return file_path
+
+
+def save_scenario_queue(scenario_metadata_list, scenario_queue):
+    """Save all scenarios in queue to their respective files"""
+    from utils import safe_print
+    if not scenario_metadata_list:
+        return
+    
+    for idx, metadata in enumerate(scenario_metadata_list):
+        try:
+            save_scenario_metadata(metadata)
+            safe_print(f"✅ [SAVE QUEUE] Saved scenario {idx+1}: {os.path.basename(metadata['file_path'])}")
+        except Exception as e:
+            safe_print(f"⚠️ [SAVE QUEUE] Failed to save scenario {idx+1}: {e}")
 
 
 def _choose_missing_image_folder(example_path, count, scenario_name=None):
@@ -280,6 +304,7 @@ def load_templates_from_file(file_path, prompt_for_missing=True):
                 "repeat": tpl.get("repeat", 1),
                 "delay": tpl.get("delay", scenario.get("click_delay", state.click_delay)),
                 "click_type": tpl.get("click_type", "single"),
+                "delay_before": tpl.get("delay_before", 0),
                 "delay_after": tpl.get("delay_after", 0.5),
                 "is_relative": tpl.get("is_relative", False),
                 "game_hwnd": tpl.get("game_hwnd"),
@@ -292,6 +317,7 @@ def load_templates_from_file(file_path, prompt_for_missing=True):
         "process_loops": scenario.get("process_loops", 1),
         "infinite_loop": scenario.get("infinite_loop", False),
         "click_delay": scenario.get("click_delay", 1.0),
+        "game_window_title": scenario.get("game_window_title"),
         "templates": templates,
     }
     return scenario, templates, metadata
@@ -315,16 +341,77 @@ def save_scenario():
 
 
 def save_scenario_to_stage(game, stage):
+    from utils import safe_print
+    import gc
+    
     stage_dir = os.path.join(SCENARIOS_ROOT, game, stage)
     os.makedirs(stage_dir, exist_ok=True)
     json_path = os.path.join(stage_dir, f"{stage}.json")
-    with open(json_path, "w", encoding="utf-8") as file_obj:
-        json.dump(_build_scenario_payload(base_dir=stage_dir), file_obj, ensure_ascii=False, indent=2)
-    return json_path
+    
+    safe_print(f"\n🔵 [SAVE_SCENARIO] Saving to: {json_path}")
+    safe_print(f"🔵 [SAVE_SCENARIO] state.templates: {len(state.templates)} items")
+    
+    try:
+        payload = _build_scenario_payload(base_dir=stage_dir)
+        safe_print(f"🔵 [SAVE_SCENARIO] Payload templates: {len(payload['templates'])} items")
+        
+        # Log target window if saved
+        if "game_window_title" in payload:
+            safe_print(f"✅ [SAVE_SCENARIO] Target window saved: {payload['game_window_title']}")
+        else:
+            safe_print(f"ℹ️ [SAVE_SCENARIO] No target window set")
+        
+        safe_print(f"🔵 [SAVE_SCENARIO] Opening file for writing...")
+        
+        # Delete old file if it exists (ensure clean write)
+        if os.path.exists(json_path):
+            gc.collect()
+            import time
+            time.sleep(0.1)  # Brief pause to release file handles
+            os.remove(json_path)
+            safe_print(f"🔵 [SAVE_SCENARIO] Deleted old file to ensure clean write")
+        
+        # Write file with explicit flush
+        with open(json_path, "w", encoding="utf-8") as file_obj:
+            json.dump(payload, file_obj, ensure_ascii=False, indent=2)
+            file_obj.flush()
+            os.fsync(file_obj.fileno())  # Force sync to disk
+        
+        safe_print(f"✅ [SAVE_SCENARIO] Successfully saved {len(payload['templates'])} templates to {json_path}")
+        
+        # Add delay and gc collection before verify
+        gc.collect()
+        import time
+        time.sleep(0.2)
+        
+        # Verify file was written
+        if os.path.exists(json_path):
+            file_size = os.path.getsize(json_path)
+            safe_print(f"✅ [SAVE_SCENARIO] File exists, size: {file_size} bytes")
+            
+            # Verify by reading back
+            with open(json_path, "r", encoding="utf-8") as f:
+                verify_payload = json.load(f)
+                verify_count = len(verify_payload.get("templates", []))
+                safe_print(f"✅ [SAVE_SCENARIO] Verified: file contains {verify_count} templates")
+                
+                # Additional check: compare with expected payload
+                if verify_count != len(payload['templates']):
+                    safe_print(f"⚠️ [SAVE_SCENARIO] WARNING: Payload had {len(payload['templates'])} but file has {verify_count}!")
+        else:
+            safe_print(f"❌ [SAVE_SCENARIO] File does NOT exist after save!")
+        
+        return json_path
+    except Exception as e:
+        safe_print(f"❌ [SAVE_SCENARIO] Error: {e}")
+        import traceback
+        safe_print(f"❌ [SAVE_SCENARIO] Traceback:\n{traceback.format_exc()}")
+        raise
 
 
 def load_scenario():
     from scenario.templates import update_history
+    from core.relative_capture import RelativeCoordinateCapture
 
     file_path = filedialog.askopenfilename(
         filetypes=[("AutoClick Scenario", "*.json"), ("All files", "*.*")],
@@ -341,10 +428,55 @@ def load_scenario():
         state.templates = templates
         state.current_library_game = None
         state.current_library_stage = None
+        
+        # AUTO-RESTORE WINDOW TARGET if saved in file
+        saved_window_title = scenario.get("game_window_title")
+        if saved_window_title:
+            safe_print(f"🔍 [LOAD] Trying to restore target window: {saved_window_title}")
+            
+            # Try to find window by title
+            try:
+                hwnd = RelativeCoordinateCapture.find_window_by_title(saved_window_title)
+                if hwnd:
+                    state.game_hwnd = hwnd
+                    state.game_window_title = saved_window_title
+                    
+                    # Update UI to show restored window
+                    from autoclick_gui import _update_root_title, _update_target_window_display
+                    _update_root_title()
+                    _update_target_window_display()
+                    
+                    safe_print(f"✅ [LOAD] Target window restored: {saved_window_title} (HWND: {hwnd})")
+                    state.UI.status_label.config(
+                        text=f"✅ Đã tải kịch bản: {os.path.basename(file_path)} | "
+                             f"Cửa sổ đích: {saved_window_title}",
+                        fg="#00cc00"
+                    )
+                else:
+                    safe_print(f"⚠️ [LOAD] Window not found: {saved_window_title}")
+                    state.UI.status_label.config(
+                        text=f"⚠️ Tải kịch bản thành công nhưng không tìm được cửa sổ: {saved_window_title}. "
+                             f"Vui lòng bấm '🎯 Xác Định Cửa Sổ Đích'",
+                        fg="#ff9900"
+                    )
+            except Exception as e:
+                safe_print(f"⚠️ [LOAD] Error restoring window: {e}")
+                state.UI.status_label.config(
+                    text=f"⚠️ Tải kịch bản thành công nhưng không tìm được cửa sổ. "
+                         f"Vui lòng bấm '🎯 Xác Định Cửa Sổ Đích'",
+                    fg="#ff9900"
+                )
+        else:
+            safe_print(f"ℹ️ [LOAD] No target window saved in file")
+            state.UI.status_label.config(
+                text=f"✅ Tải kịch bản: {os.path.basename(file_path)} | "
+                     f"⚠️ Chưa có cửa sổ đích. Bấm '🎯 Xác Định Cửa Sổ Đích'",
+                fg="#ffaa00"
+            )
+        
         update_history()
-        state.UI.status_label.config(text=f"Da tai kich ban: {os.path.basename(file_path)}")
     except Exception as exc:
-        state.UI.status_label.config(text=f"Tai kich ban that bai: {exc}")
+        state.UI.status_label.config(text=f"❌ Tải kịch bản thất bại: {exc}")
 
 
 def load_multiple_scenarios():
@@ -386,8 +518,10 @@ def load_scenario_combo():
     """Load multiple scenarios to queue (always append, never replace)
     - User selects 1 or more files
     - All files are loaded into queue and run in sequence
+    - Auto-restores window target from the FIRST file if available
     """
     from scenario.templates import update_history
+    from core.relative_capture import RelativeCoordinateCapture
 
     file_paths = filedialog.askopenfilenames(
         filetypes=[("AutoClick Scenario", "*.json"), ("All files", "*.*")],
@@ -400,21 +534,64 @@ def load_scenario_combo():
     failed_files = []
     safe_print(f"📋 [DEBUG] Selected {len(file_paths)} scenario files to add")
 
-    for file_path in file_paths:
+    first_window_title = None
+    for idx, file_path in enumerate(file_paths):
         try:
             safe_print(f"📋 [DEBUG] Loading scenario: {file_path}")
             _scenario, _templates, metadata = load_templates_from_file(file_path, prompt_for_missing=True)
             state.scenario_metadata.append(metadata)
             state.scenario_queue.append(file_path)
+            
+            # Save first window title to auto-restore
+            if idx == 0 and _scenario.get("game_window_title"):
+                first_window_title = _scenario.get("game_window_title")
+                
         except Exception as exc:
             failed_files.append(file_path)
             safe_print(f"⚠️ Lỗi tải kịch bản {file_path}: {exc}")
 
     if state.scenario_metadata:
+        # AUTO-RESTORE WINDOW from first scenario if available
+        if first_window_title:
+            safe_print(f"🔍 [LOAD_COMBO] Trying to restore target window: {first_window_title}")
+            try:
+                hwnd = RelativeCoordinateCapture.find_window_by_title(first_window_title)
+                if hwnd:
+                    state.game_hwnd = hwnd
+                    state.game_window_title = first_window_title
+                    
+                    # Update UI
+                    from autoclick_gui import _update_root_title, _update_target_window_display
+                    _update_root_title()
+                    _update_target_window_display()
+                    
+                    safe_print(f"✅ [LOAD_COMBO] Target window restored: {first_window_title} (HWND: {hwnd})")
+                    state.UI.status_label.config(
+                        text=f"✅ Tổng {len(state.scenario_metadata)} kịch bản | "
+                             f"Cửa sổ: {first_window_title} | Bấm 'TUNG POKÉBALL!' để chạy",
+                        fg="#00cc00"
+                    )
+                else:
+                    safe_print(f"⚠️ [LOAD_COMBO] Window not found: {first_window_title}")
+                    state.UI.status_label.config(
+                        text=f"⚠️ Tổng {len(state.scenario_metadata)} kịch bản, nhưng không tìm được cửa sổ: {first_window_title}. "
+                             f"Bấm '🎯 Xác Định Cửa Sổ Đích'",
+                        fg="#ff9900"
+                    )
+            except Exception as e:
+                safe_print(f"⚠️ [LOAD_COMBO] Error restoring window: {e}")
+                state.UI.status_label.config(
+                    text=f"⚠️ Tổng {len(state.scenario_metadata)} kịch bản, nhưng không tìm được cửa sổ. "
+                         f"Bấm '🎯 Xác Định Cửa Sổ Đích'",
+                    fg="#ff9900"
+                )
+        else:
+            state.UI.status_label.config(
+                text=f"✅ Tổng {len(state.scenario_metadata)} kịch bản. ⚠️ Chưa có cửa sổ đích. Bấm '🎯 Xác Định Cửa Sổ Đích'",
+                fg="#ffaa00"
+            )
+        
         update_history()
-        state.UI.status_label.config(
-            text=f"✅ Tổng {len(state.scenario_metadata)} kịch bản. Bấm 'TUNG POKÉBALL!' để chạy."
-        )
     elif failed_files:
         failed_list = ", ".join(os.path.basename(path) for path in failed_files)
         state.UI.status_label.config(text=f"❌ Không tải được kịch bản nào. File lỗi: {failed_list}.")

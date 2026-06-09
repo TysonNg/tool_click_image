@@ -358,8 +358,8 @@ def show_coordinate_config_dialog(initial_x=None, initial_y=None):
     root = state.UI.root
     dialog = tk.Toplevel(root)
     dialog.title("⚙️ Cài đặt tọa độ")
-    dialog.geometry("550x600")
-    dialog.minsize(500, 520)
+    dialog.geometry("550x700")  # Tăng chiều cao từ 600 lên 700
+    dialog.minsize(500, 620)  # Tăng minsize từ 520 lên 620
     dialog.resizable(True, True)
 
     main_frame = tk.Frame(dialog, bg="white")
@@ -374,42 +374,48 @@ def show_coordinate_config_dialog(initial_x=None, initial_y=None):
     button_frame.pack(side=tk.BOTTOM, fill=tk.X, padx=20, pady=(0, 20))
 
     content_frame = tk.Frame(main_frame, bg="white")
-    content_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=20, pady=20)
+    content_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=20, pady=15)  # Giảm pady từ 20 lên 15
 
     fields = {}
 
     tk.Label(content_frame, text="📍 Tọa độ X:", font=("Segoe UI", 11, "bold"),
-             bg="white", fg="black").pack(anchor="w", pady=(10, 3))
+             bg="white", fg="black").pack(anchor="w", pady=(8, 2))  # Giảm pady
     x_var = tk.StringVar(value=str(initial_x) if initial_x is not None else "0")
-    tk.Entry(content_frame, textvariable=x_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 15), fill=tk.X)
+    tk.Entry(content_frame, textvariable=x_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 12), fill=tk.X)  # Giảm pady
     fields["x"] = x_var
 
     tk.Label(content_frame, text="📍 Tọa độ Y:", font=("Segoe UI", 11, "bold"),
-             bg="white", fg="black").pack(anchor="w", pady=(10, 3))
+             bg="white", fg="black").pack(anchor="w", pady=(8, 2))
     y_var = tk.StringVar(value=str(initial_y) if initial_y is not None else "0")
-    tk.Entry(content_frame, textvariable=y_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 15), fill=tk.X)
+    tk.Entry(content_frame, textvariable=y_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 12), fill=tk.X)
     fields["y"] = y_var
 
     tk.Label(content_frame, text="📍 Số lần click:", font=("Segoe UI", 11, "bold"),
-             bg="white", fg="black").pack(anchor="w", pady=(10, 3))
+             bg="white", fg="black").pack(anchor="w", pady=(8, 2))
     repeat_var = tk.StringVar(value="1")
-    tk.Entry(content_frame, textvariable=repeat_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 15), fill=tk.X)
+    tk.Entry(content_frame, textvariable=repeat_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 12), fill=tk.X)
     fields["repeat"] = repeat_var
 
     tk.Label(content_frame, text="🖱️ Loại click:", font=("Segoe UI", 11, "bold"),
-             bg="white", fg="black").pack(anchor="w", pady=(10, 3))
+             bg="white", fg="black").pack(anchor="w", pady=(8, 2))
     click_type_var = tk.StringVar(value="single")
     click_type_frame = tk.Frame(content_frame, bg="white")
-    click_type_frame.pack(anchor="w", pady=(0, 15), fill=tk.X)
+    click_type_frame.pack(anchor="w", pady=(0, 12), fill=tk.X)  # Giảm pady
     for opt in ["single", "double", "hold"]:
         tk.Radiobutton(click_type_frame, text=opt, variable=click_type_var, value=opt,
                        bg="white", fg="black", font=("Segoe UI", 10)).pack(side=tk.LEFT, padx=10)
     fields["click_type"] = click_type_var
 
+    tk.Label(content_frame, text="⏱️ Delay trước click (giây):", font=("Segoe UI", 11, "bold"),
+             bg="white", fg="black").pack(anchor="w", pady=(8, 2))
+    delay_before_var = tk.StringVar(value="0")
+    tk.Entry(content_frame, textvariable=delay_before_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 12), fill=tk.X)
+    fields["delay_before"] = delay_before_var
+
     tk.Label(content_frame, text="⏱️ Delay sau click (giây):", font=("Segoe UI", 11, "bold"),
-             bg="white", fg="black").pack(anchor="w", pady=(10, 3))
+             bg="white", fg="black").pack(anchor="w", pady=(8, 2))
     delay_after_var = tk.StringVar(value="0.5")
-    tk.Entry(content_frame, textvariable=delay_after_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 15), fill=tk.X)
+    tk.Entry(content_frame, textvariable=delay_after_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 10), fill=tk.X)  # Giảm py cuối
     fields["delay_after"] = delay_after_var
 
     result = {"ok": False}
@@ -444,6 +450,7 @@ def show_coordinate_config_dialog(initial_x=None, initial_y=None):
                 "y": int(fields["y"].get()) if fields["y"].get().isdigit() else 0,
                 "repeat": int(fields["repeat"].get()) if fields["repeat"].get().isdigit() else 1,
                 "click_type": fields["click_type"].get(),
+                "delay_before": float(fields["delay_before"].get()) if fields["delay_before"].get() else 0,
                 "delay_after": float(fields["delay_after"].get()) if fields["delay_after"].get() else 0.5
             }
         except:
