@@ -1,3 +1,4 @@
+import copy
 import os
 import time
 import tkinter as tk
@@ -30,6 +31,9 @@ from ui.dialogs import (
 )
 from scenario.library import SCENARIOS_ROOT, copy_image_to_stage
 from ui.theme import *
+
+
+_TEMPLATE_IMAGE_CACHE_FIELDS = ("img", "imgs", "mask", "masks")
 
 
 def update_history():
@@ -79,10 +83,15 @@ def update_history():
                         else:
                             state.UI.history_list.insert(tk.END, f"  {item_idx+1}. {tpl['path']} (lặp {tpl['repeat']} lần){delay_str}{wait_str}")
                     elif tpl["type"] == "key":
-                        delay_str = f" [delay {tpl.get('delay', state.click_delay)}s]"
+                        delay_str = f" [sau nhấn {tpl.get('delay_after', 0.5)}s]"
                         state.UI.history_list.insert(tk.END, f"  {item_idx+1}. ⌨️ {tpl['path']} (nhấn {tpl['repeat']} lần){delay_str}")
                     else:
-                        delay_str = f" [delay {tpl.get('delay', state.click_delay)}s]"
+                        delay_parts = []
+                        delay_before = tpl.get("delay_before", 0)
+                        if delay_before > 0:
+                            delay_parts.append(f"trước click {delay_before}s")
+                        delay_parts.append(f"sau click {tpl.get('delay_after', 0.5)}s")
+                        delay_str = f" [{' | '.join(delay_parts)}]"
                         click_type_str = f" [{tpl.get('click_type', 'single')}]" if tpl["type"] == "coord" else ""
                         state.UI.history_list.insert(tk.END, f"  {item_idx+1}. {tpl['path']} (lặp {tpl['repeat']} lần){click_type_str}{delay_str}")
 
@@ -107,11 +116,16 @@ def update_history():
                     state.UI.history_list.insert(tk.END, f"{i+1}. {tpl['path']} (lặp {tpl['repeat']} lần){delay_str}{wait_str}")
                     safe_print(f"🔵 [UPDATE_HISTORY] Inserted item {i+1}")
             elif tpl["type"] == "key":
-                delay_str = f" [delay {tpl.get('delay', state.click_delay)}s]"
+                delay_str = f" [sau nhấn {tpl.get('delay_after', 0.5)}s]"
                 state.UI.history_list.insert(tk.END, f"{i+1}. ⌨️ {tpl['path']} (nhấn {tpl['repeat']} lần){delay_str}")
                 safe_print(f"🔵 [UPDATE_HISTORY] Inserted item {i+1}")
             else:
-                delay_str = f" [delay {tpl.get('delay', state.click_delay)}s]"
+                delay_parts = []
+                delay_before = tpl.get("delay_before", 0)
+                if delay_before > 0:
+                    delay_parts.append(f"trước click {delay_before}s")
+                delay_parts.append(f"sau click {tpl.get('delay_after', 0.5)}s")
+                delay_str = f" [{' | '.join(delay_parts)}]"
                 click_type_str = f" [{tpl.get('click_type', 'single')}]" if tpl["type"] == "coord" else ""
                 state.UI.history_list.insert(tk.END, f"{i+1}. {tpl['path']} (lặp {tpl['repeat']} lần){click_type_str}{delay_str}")
                 safe_print(f"🔵 [UPDATE_HISTORY] Inserted item {i+1}")
@@ -938,6 +952,7 @@ def add_coordinate():
         "y": config["y"],
         "repeat": config["repeat"],
         "click_type": config["click_type"],
+        "delay_before": config.get("delay_before", 0),
         "delay_after": config["delay_after"],
         "is_relative": False,  # Regular coordinates are absolute
         "path": f"({config['x']},{config['y']})"
@@ -967,6 +982,7 @@ def add_current_position():
         "y": config["y"],
         "repeat": config["repeat"],
         "click_type": config["click_type"],
+        "delay_before": config.get("delay_before", 0),
         "delay_after": config["delay_after"],
         "is_relative": False,  # Regular coordinates are absolute
         "path": f"({config['x']},{config['y']})"
@@ -1257,6 +1273,59 @@ def delete_selected():
     safe_print(f"🔵 [DEBUG DELETE] ========== DELETE END ==========\n")
 
 
+def _copy_template(tpl):
+    copy_source = {
+        key: value
+        for key, value in tpl.items()
+        if key not in _TEMPLATE_IMAGE_CACHE_FIELDS
+    }
+    copied = copy.deepcopy(copy_source)
+    for field in _TEMPLATE_IMAGE_CACHE_FIELDS:
+        if field in tpl:
+            copied[field] = tpl[field]
+    return copied
+
+
+def _select_history_item(index):
+    try:
+        state.UI.history_list.selection_clear(0, tk.END)
+        state.UI.history_list.selection_set(index)
+        state.UI.history_list.activate(index)
+        state.UI.history_list.see(index)
+    except Exception:
+        pass
+
+
+def copy_selected():
+    """Copy selected step/template and insert the copy immediately below it."""
+    selected = state.UI.history_list.curselection()
+    if not selected:
+        state.UI.status_label.config(text="⚠️ Vui lòng chọn một bước để copy.")
+        return
+
+    selected_line = selected[0]
+    ctx = _resolve_selection_context(selected_line)
+    kind = ctx[0]
+
+    if kind == "editor_item":
+        t_idx = ctx[1]
+        copied = _copy_template(state.templates[t_idx])
+        state.templates.insert(t_idx + 1, copied)
+    elif kind == "scenario_item":
+        s_idx, t_idx = ctx[1], ctx[2]
+        templates = state.scenario_metadata[s_idx]["templates"]
+        copied = _copy_template(templates[t_idx])
+        templates.insert(t_idx + 1, copied)
+    else:
+        state.UI.status_label.config(text="⚠️ Chỉ có thể copy bước, tọa độ hoặc phím trong kịch bản.")
+        return
+
+    update_history()
+    _autosave_to_library()
+    _select_history_item(selected_line + 1)
+    state.UI.status_label.config(text="📋 Đã copy bước xuống bên dưới.")
+
+
 def clear_all_items():
     """Unified clear: xóa toàn bộ queue (queue mode) hoặc xóa toàn bộ templates (editor mode)."""
     if state.scenario_metadata:
@@ -1349,13 +1418,18 @@ def _edit_template_in_list(template_list, idx, persist):
         # Pass current values to dialog for editing
         config = show_coordinate_config_dialog(
             initial_x=tpl.get("x", 0),
-            initial_y=tpl.get("y", 0)
+            initial_y=tpl.get("y", 0),
+            initial_repeat=tpl.get("repeat", 1),
+            initial_click_type=tpl.get("click_type", "single"),
+            initial_delay_before=tpl.get("delay_before", 0),
+            initial_delay_after=tpl.get("delay_after", 0.5),
         )
         if config is not None:
             tpl["x"] = config["x"]
             tpl["y"] = config["y"]
             tpl["repeat"] = config["repeat"]
             tpl["click_type"] = config["click_type"]
+            tpl["delay_before"] = config.get("delay_before", 0)
             tpl["delay_after"] = config["delay_after"]
             tpl["path"] = f"({config['x']},{config['y']})"
             update_history()
@@ -1368,7 +1442,7 @@ def _edit_template_in_list(template_list, idx, persist):
             initial_key=tpl.get("key", "enter"),
             initial_repeat=tpl.get("repeat", 1),
             initial_key_type=tpl.get("key_type", "press"),
-            initial_delay=tpl.get("delay_after", 0.5)
+            initial_delay_after=tpl.get("delay_after", 0.5),
         )
         if config is not None:
             tpl["key"] = config["key"]

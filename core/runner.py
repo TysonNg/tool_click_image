@@ -341,7 +341,7 @@ def find_and_click(queue_mode=False):
                         if i < tpl["repeat"] - 1:
                             time.sleep(0)  # No gap between repeats
 
-                if state.running:
+                if state.running and tpl["type"] == "image":
                     time.sleep(tpl.get("delay", state.click_delay))
 
             loop_count += 1

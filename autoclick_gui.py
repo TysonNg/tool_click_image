@@ -33,7 +33,7 @@ from scenario.templates import (
     add_image, add_coordinate, add_current_position, add_keyboard_key,
     set_search_region, clear_search_region, set_process_loops, set_speed, toggle_human_click,
     test_image_matching, update_history,
-    delete_selected, clear_all_items, edit_delay, edit_image_config,
+    copy_selected, delete_selected, clear_all_items, edit_delay, edit_image_config,
     move_selected_up, move_selected_down,
 )
 from scenario.details_editor import edit_scenario_details
@@ -783,6 +783,9 @@ row2.pack(fill="both", expand=True, pady=1, padx=0)
 create_btn(row2, "✏️  Sửa", edit_image_config,
            bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
            ).pack(side="left", fill="both", expand=True, padx=(0, 2), ipady=5)
+create_btn(row2, "📋  Copy", copy_selected,
+           bg=PKM_BLUE_DARK, fg=PKM_WHITE, hover_bg=PKM_BLUE
+           ).pack(side="left", fill="both", expand=True, padx=2, ipady=5)
 create_btn(row2, "🗑️  Xóa", delete_selected,
            bg=PKM_RED, fg=PKM_WHITE, hover_bg=PKM_RED_LIGHT
            ).pack(side="right", fill="both", expand=True, padx=(2, 0), ipady=5)

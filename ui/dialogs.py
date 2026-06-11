@@ -354,7 +354,14 @@ def show_image_config_dialog(is_detection=False, initial_repeat=None, initial_de
     return None
 
 
-def show_coordinate_config_dialog(initial_x=None, initial_y=None):
+def show_coordinate_config_dialog(
+    initial_x=None,
+    initial_y=None,
+    initial_repeat=1,
+    initial_click_type="single",
+    initial_delay_before=0,
+    initial_delay_after=0.5,
+):
     root = state.UI.root
     dialog = tk.Toplevel(root)
     dialog.title("⚙️ Cài đặt tọa độ")
@@ -392,13 +399,13 @@ def show_coordinate_config_dialog(initial_x=None, initial_y=None):
 
     tk.Label(content_frame, text="📍 Số lần click:", font=("Segoe UI", 11, "bold"),
              bg="white", fg="black").pack(anchor="w", pady=(8, 2))
-    repeat_var = tk.StringVar(value="1")
+    repeat_var = tk.StringVar(value=str(initial_repeat))
     tk.Entry(content_frame, textvariable=repeat_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 12), fill=tk.X)
     fields["repeat"] = repeat_var
 
     tk.Label(content_frame, text="🖱️ Loại click:", font=("Segoe UI", 11, "bold"),
              bg="white", fg="black").pack(anchor="w", pady=(8, 2))
-    click_type_var = tk.StringVar(value="single")
+    click_type_var = tk.StringVar(value=str(initial_click_type))
     click_type_frame = tk.Frame(content_frame, bg="white")
     click_type_frame.pack(anchor="w", pady=(0, 12), fill=tk.X)  # Giảm pady
     for opt in ["single", "double", "hold"]:
@@ -408,13 +415,13 @@ def show_coordinate_config_dialog(initial_x=None, initial_y=None):
 
     tk.Label(content_frame, text="⏱️ Delay trước click (giây):", font=("Segoe UI", 11, "bold"),
              bg="white", fg="black").pack(anchor="w", pady=(8, 2))
-    delay_before_var = tk.StringVar(value="0")
+    delay_before_var = tk.StringVar(value=str(initial_delay_before))
     tk.Entry(content_frame, textvariable=delay_before_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 12), fill=tk.X)
     fields["delay_before"] = delay_before_var
 
     tk.Label(content_frame, text="⏱️ Delay sau click (giây):", font=("Segoe UI", 11, "bold"),
              bg="white", fg="black").pack(anchor="w", pady=(8, 2))
-    delay_after_var = tk.StringVar(value="0.5")
+    delay_after_var = tk.StringVar(value=str(initial_delay_after))
     tk.Entry(content_frame, textvariable=delay_after_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 10), fill=tk.X)  # Giảm py cuối
     fields["delay_after"] = delay_after_var
 
@@ -451,14 +458,19 @@ def show_coordinate_config_dialog(initial_x=None, initial_y=None):
                 "repeat": int(fields["repeat"].get()) if fields["repeat"].get().isdigit() else 1,
                 "click_type": fields["click_type"].get(),
                 "delay_before": float(fields["delay_before"].get()) if fields["delay_before"].get() else 0,
-                "delay_after": float(fields["delay_after"].get()) if fields["delay_after"].get() else 0.5
+                "delay_after": float(fields["delay_after"].get()) if fields["delay_after"].get() else 0.5,
             }
         except:
             return None
     return None
 
 
-def show_keyboard_config_dialog(initial_key="enter", initial_repeat=1, initial_key_type="press", initial_delay=0.5):
+def show_keyboard_config_dialog(
+    initial_key="enter",
+    initial_repeat=1,
+    initial_key_type="press",
+    initial_delay_after=0.5,
+):
     root = state.UI.root
     dialog = tk.Toplevel(root)
     dialog.title("⚙️ Cài đặt phím")
@@ -508,7 +520,7 @@ def show_keyboard_config_dialog(initial_key="enter", initial_repeat=1, initial_k
 
     tk.Label(content_frame, text="⏱️ Delay sau nhấn (giây):", font=("Segoe UI", 11, "bold"),
              bg="white", fg="black").pack(anchor="w", pady=(10, 3))
-    delay_after_var = tk.StringVar(value=str(initial_delay))
+    delay_after_var = tk.StringVar(value=str(initial_delay_after))
     tk.Entry(content_frame, textvariable=delay_after_var, font=("Segoe UI", 11), width=40).pack(anchor="w", pady=(0, 15), fill=tk.X)
     fields["delay_after"] = delay_after_var
 
@@ -543,7 +555,7 @@ def show_keyboard_config_dialog(initial_key="enter", initial_repeat=1, initial_k
                 "key": fields["key"].get().strip().lower() or "enter",
                 "repeat": int(fields["repeat"].get()) if fields["repeat"].get().isdigit() else 1,
                 "key_type": fields["key_type"].get(),
-                "delay_after": float(fields["delay_after"].get()) if fields["delay_after"].get() else 0.5
+                "delay_after": float(fields["delay_after"].get()) if fields["delay_after"].get() else 0.5,
             }
         except:
             return None
