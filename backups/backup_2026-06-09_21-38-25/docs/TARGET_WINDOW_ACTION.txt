@@ -1,0 +1,98 @@
+═══════════════════════════════════════════════════════════════════════════════
+  🎯 TARGET WINDOW INDICATOR - QUICK ACTION GUIDE
+═══════════════════════════════════════════════════════════════════════════════
+
+WHAT'S NEW?
+───────────
+✅ Scenario panel now shows: 🎯 Cửa sổ đích: [Window Name]
+✅ Title bar displays: ⚡ ... | 🎯 TARGET: [Window Name]
+✅ New button to clear target window: ❌ Bỏ Cửa sổ Đích
+
+═══════════════════════════════════════════════════════════════════════════════
+  WHAT TO DO NOW
+═══════════════════════════════════════════════════════════════════════════════
+
+1️⃣ RESTART AUTOCLICK
+   - Restart AutoClick to load all changes
+   - New features will be active
+
+2️⃣ TEST TARGET WINDOW INDICATOR
+   - Click "Xác định cửa sổ đích" button (left panel)
+   - Select your game window
+   - LOOK FOR:
+     ✓ Title bar shows: ⚡ ... | 🎯 TARGET: [Your Game]
+     ✓ Scenario panel shows: 🎯 Cửa sổ đích: [Your Game]
+     ✓ Game window flashes 3 times
+     ✓ Status bar shows: ✅ Đã xác định cửa sổ đích: [Game] | Kích thước: WxH
+
+3️⃣ TEST CLEAR BUTTON
+   - Click "❌ Bỏ Cửa sổ Đích" button (bottom right of scenario panel)
+   - LOOK FOR:
+     ✓ Scenario panel resets to: 🎯 Cửa sổ đích: Chưa xác định
+     ✓ Title bar returns to: ⚡ PokéClick PRO — Hệ thống Tự Động Chiến Đấu
+     ✓ Confirmation dialog appears
+
+═══════════════════════════════════════════════════════════════════════════════
+  UI CHANGES
+═══════════════════════════════════════════════════════════════════════════════
+
+SCENARIO PANEL (POKÉDEX KỊCH BẢN) - RIGHT SIDE:
+┌─ Lucario Decoration ────────────────────────────┐
+│ Lucario Ready for Battle! ⚡                      │
+└────────────────────────────────────────────────┘
+🎯 Cửa sổ đích: [Window Name] ← NEW!
+🔄 Vòng lặp: 1 | ⚡ Tốc độ: 1.0s
+
+[History Listbox with items...]
+
+[▲ Lên] [▼ Xuống]
+[✏️ Sửa] [🗑️ Xóa]
+[📋 Quản Lý Kịch Bản] [🗑️ Xóa Sạch] [❌ Bỏ Cửa sổ Đích] ← NEW BUTTON!
+
+═══════════════════════════════════════════════════════════════════════════════
+  VISUAL FEEDBACK
+═══════════════════════════════════════════════════════════════════════════════
+
+When you SET a target window:
+✅ AutoClick title bar: ⚡ PokéClick PRO — Hệ thống Tự Động Chiến Đấu | 🎯 TARGET: Dragon City
+✅ Scenario panel: 🎯 Cửa sổ đích: Dragon City
+✅ Game window flashes 3x (200ms each)
+✅ Console: ✅ Window đích: Dragon City (HWND: xxxx)
+
+When you CLEAR target window:
+✅ Scenario panel: 🎯 Cửa sổ đích: Chưa xác định
+✅ Title bar: ⚡ PokéClick PRO — Hệ thống Tự Động Chiến Đấu
+✅ Console: ❌ Đã bỏ cửa sổ đích
+
+═══════════════════════════════════════════════════════════════════════════════
+  FILES CHANGED
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ autoclick_gui.py
+  - Added _update_target_window_display() function
+  - Added clear_target_window() function
+  - Added target window frame to scenario panel
+  - Added "❌ Bỏ Cửa sổ Đích" button
+  - Updated set_target_window() to refresh display
+
+✓ core/state.py
+  - Added target_window_text to UI class
+
+═══════════════════════════════════════════════════════════════════════════════
+  NEXT STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Restart AutoClick
+2. Test setting a target window
+3. Test clearing the target window
+4. Proceed with your automation tasks!
+
+═══════════════════════════════════════════════════════════════════════════════
+  COMPLETION STATUS
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Task 1: Image Recognition (Vision Matching) - COMPLETE
+✅ Task 2: UI Scroll Region Fix - COMPLETE
+✅ Task 3: Target Window Indicator - COMPLETE & ENHANCED
+
+═══════════════════════════════════════════════════════════════════════════════

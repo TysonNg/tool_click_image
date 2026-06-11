@@ -1,0 +1,183 @@
+{
+  "process_loops": 999999,
+  "infinite_loop": true,
+  "click_delay": 0.5,
+  "templates": [
+    {
+      "type": "image",
+      "path": "1.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 83,
+      "click_y": 27,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "capture_2.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 78,
+      "click_y": 18,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "capture_3.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 99,
+      "click_y": 19,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "capture_4.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 71,
+      "click_y": 24,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "capture_5.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 115,
+      "click_y": 19,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "capture_6.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 68,
+      "click_y": 22,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "capture_7.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 66,
+      "click_y": 22,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "8_2.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 83,
+      "click_y": 23,
+      "mask_path": null
+    }
+  ]
+}

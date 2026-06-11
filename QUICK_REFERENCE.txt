@@ -1,0 +1,267 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║              🎯 AUTOCLICK TOOL — QUICK REFERENCE GUIDE                         ║
+║                          June 9, 2026 — All Systems ✅                          ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 WORKFLOW (Step-by-Step)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  SET TARGET WINDOW
+    👉 Click: "🎯 Xác Định Cửa Sổ Đích"
+    👉 Enter game window title (e.g., "MapleStoryM", "Chrome")
+    👉 Window will flash to show it's selected
+    👉 Title bar shows: "🎯 TARGET: [Window Name]"
+
+2️⃣  ADD ACTIONS (Choose one or more)
+    
+    📸 ADD IMAGE TARGET
+       👉 Click: "🖼️ Thêm Pokémon mục tiêu (Ảnh)"
+       👉 Select image to find
+       
+    📍 ADD COORDINATES (Two options)
+       
+       Option A: Absolute Coordinates
+       👉 Click: "📍 Thêm tọa độ chiến trường (XY)"
+       👉 Enter X, Y position (screen coordinates)
+       
+       Option B: Relative Coordinates (RECOMMENDED)
+       👉 Click: "📍 Lấy Tọa Độ Tương Đối (Relative)"
+       👉 Click on position in game window
+       👉 Coordinates auto-saved as relative to window
+       👉 ✅ Works even if window moves!
+    
+    ⌨️  ADD KEYBOARD KEY
+       👉 Click: "⌨️ Thêm phím bàn phím"
+       👉 Select key to press
+
+3️⃣  CONFIGURE (Optional)
+    👉 "🔄 Số trận đấu" — How many times to repeat
+    👉 "⚡ Tốc độ tấn công" — Delay between actions (seconds)
+    👉 "🤖 Click tức thì" — Toggle human-like delays
+
+4️⃣  SAVE SCENARIO
+    👉 Click: "💾 Lưu dữ liệu Trainer"
+    👉 Choose location and name
+    👉 ✅ Window title is automatically saved!
+
+5️⃣  RUN
+    👉 Click: "⚡ TUNG POKÉBALL!"
+    👉 Script will:
+       • Check window is still valid
+       • Auto-restore if minimized
+       • Auto-find if title changed
+       • Execute all actions sequentially
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎮 LOADING & RUNNING SAVED SCENARIOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SINGLE SCENARIO:
+  👉 Click: "📂 Tải dữ liệu Trainer"
+  👉 Select scenario file
+  👉 ✅ Window automatically restored if saved
+  👉 Click: "⚡ TUNG POKÉBALL!" to run
+
+MULTIPLE SCENARIOS (Queue):
+  👉 Click: "📂 Tải dữ liệu Trainer"
+  👉 Select multiple files (Ctrl+Click)
+  👉 ✅ Window restored from first file
+  👉 All scenarios run sequentially
+  👉 Click: "⚡ TUNG POKÉBALL!" to start queue
+
+LIBRARY MODE:
+  👉 Expand game in library panel
+  👉 ☐ Check scenarios you want to run
+  👉 Click: "TUNG POKÉBALL!"
+  👉 Selected scenarios run in sequence
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 RELATIVE VS ABSOLUTE COORDINATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ABSOLUTE (Old way):
+  ❌ Click at fixed screen position (e.g., 512, 300)
+  ❌ Breaks if window moves
+  ❌ Breaks if you have multiple monitors
+  
+RELATIVE (New way - RECOMMENDED):
+  ✅ Click at position relative to game window
+  ✅ Works even if window moves
+  ✅ Works with multiple monitors
+  ✅ Auto-saved with window title for verification
+  
+HOW TO USE RELATIVE:
+  1. Set target window first
+  2. Click "📍 Lấy Tọa Độ Tương Đối (Relative)"
+  3. Click/drag on position in game
+  4. Coordinates saved relative to window top-left
+  5. On execution: automatically converts to screen position
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️  TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ "Window handle is no longer valid"
+   → Game window was closed or minimized
+   → Solution: Keep game window open and visible
+   → Auto-restore will try to find it by title
+
+❌ "Cannot determine click point"
+   → Image not found in game
+   → Solution: 
+      • Check game is in correct state
+      • Check image quality
+      • Lower threshold if needed (e.g., 0.7 → 0.6)
+
+❌ "Coordinates clicking wrong position"
+   → Using absolute coordinates instead of relative
+   → OR using old coordinates when window moved
+   → Solution: Use relative coordinates instead
+
+❌ "Window not restored on load"
+   → Old scenario file (no window title saved)
+   → Solution: Manually set window, then run
+
+❌ "Script starts but window not responding"
+   → Game lost focus or was minimized
+   → Solution: Keep game window visible and focused
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⌨️  KEYBOARD SHORTCUTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+F6  - Start script (default)
+F7  - Stop script (default)
+
+Change hotkeys:
+  👉 Click: "⌨️ Phím Chiến Đấu" or "⌨️ Phím Rút Lui"
+  👉 Press new key when asked
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 TIPS & TRICKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Always use RELATIVE coordinates when possible
+   → More reliable across reboots
+   → Works even if window moves
+
+2. Set window title clearly
+   → Use unique words from window title
+   → Partial match is OK (e.g., "Story" matches "MapleStoryM")
+
+3. Use search region for faster matching
+   → If game is large, limit search area
+   → Speeds up template matching
+
+4. Import old scenarios
+   → Library panel → Right-click on file
+   → Auto-detects and converts coordinates
+   → Smart image discovery for duplicates
+
+5. Use library organization
+   → Create game folders in Library
+   → Check scenarios to run
+   → Run queue with one click
+
+6. Backup regularly
+   → Use create_backup.py script
+   → Automatic backups kept (3 latest)
+   → Can restore if something breaks
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 SCENARIO FILE FORMAT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{
+  "process_loops": 1,                    # Repetitions
+  "infinite_loop": false,                # Run forever?
+  "click_delay": 1.0,                    # Delay between actions
+  "game_window_title": "MapleStoryM",    # ✅ Auto-restored on load
+  "templates": [
+    {
+      "type": "image",                   # Type: image, coord, key
+      "path": "1.png",
+      "repeat": 1,
+      "delay": 2.0,
+      "threshold": 0.7,
+      "click_type": "single",            # single, double, hold
+      "is_relative": false               # ✅ Use relative coordinates
+    },
+    {
+      "type": "coord",
+      "x": 512,
+      "y": 300,
+      "is_relative": true,               # ✅ Relative to window
+      "click_type": "single"
+    }
+  ]
+}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📁 FILE STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+tool_click_image/
+├── autoclick_gui.py              ← Main GUI app
+├── create_backup.py              ← Backup script
+├── scenarios/
+│   ├── Dragoncity/
+│   │   ├── Arena/
+│   │   │   ├── Arena.json        ← Scenario file
+│   │   │   ├── capture_1.png
+│   │   │   └── ...
+│   │   └── ...
+│   └── MapleStoryM/
+│       └── ...
+├── core/
+│   ├── runner.py                 ← Execution engine
+│   ├── window_guard.py            ← Window protection ✅
+│   ├── relative_capture.py        ← Coordinate capture ✅
+│   └── ...
+└── backups/
+    ├── backup_2026-06-09_21-36-45/
+    ├── backup_2026-06-09_21-38-25/
+    └── backup_2026-06-09_21-38-56/  ← Latest backup
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ VERIFICATION CHECKLIST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Window protection system is active
+✓ Auto-restore working for minimized windows
+✓ Auto-find working for closed/reopened windows
+✓ Relative coordinates working correctly
+✓ Window title saved/restored with scenarios
+✓ Old scenarios can be imported
+✓ Backup system creating backups
+✓ All scenarios loading without errors
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📞 SUPPORT COMMANDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Clear target window:
+  👉 Right-click on target window display
+  👉 Select "Clear target window"
+
+Export/backup your scenarios:
+  👉 Run: python create_backup.py
+  👉 Creates timestamped backup folder
+
+Change speed/delays:
+  👉 Click: "⚡ Tốc độ tấn công"
+  👉 Adjust delay value
+
+Restart with fresh state:
+  👉 Close and reopen autoclick_gui.py
+  👉 Window targets are preserved in scenario files
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 Remember: Always use RELATIVE coordinates for best results!
+   They work even if your window moves or game restarts.
+
+📚 For detailed docs: See SYSTEM_STATUS.md and CHANGES_SUMMARY.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -1,0 +1,134 @@
+═══════════════════════════════════════════════════════════════════════════════
+  🔧 PERMISSION ERROR FIX - QUICK ACTION
+═══════════════════════════════════════════════════════════════════════════════
+
+PROBLEM:
+─────────
+When renaming/deleting game/stage folders:
+❌ PermissionError: [WinError 5] Access is denied
+
+CAUSE:
+───────
+Windows locks folders when in use by AutoClick/game
+
+SOLUTION APPLIED:
+──────────────────
+✅ Automatic retry (3x) for all folder operations
+✅ 500ms delay between retries
+✅ Forced garbage collection to release handles
+✅ Better error messages with instructions
+✅ Fallback copy+delete method if retry fails
+
+═══════════════════════════════════════════════════════════════════════════════
+  WHAT TO DO NOW
+═══════════════════════════════════════════════════════════════════════════════
+
+1️⃣ RESTART AUTOCLICK
+   - Load all new permission error handling code
+
+2️⃣ TRY RENAMING A GAME
+   - Even if game is open (will auto-retry)
+   - Should work now! ✅
+
+3️⃣ IF ERROR STILL APPEARS:
+   - Close game window completely
+   - Close File Explorer if viewing scenarios folder
+   - Restart AutoClick
+   - Try again
+
+═══════════════════════════════════════════════════════════════════════════════
+  HOW IT WORKS
+═══════════════════════════════════════════════════════════════════════════════
+
+When you try to rename "maple" → "MapleStory":
+
+Attempt 1: Direct rename
+└─ If fails, wait 500ms...
+
+Attempt 2: Direct rename again
+└─ If fails, wait 500ms...
+
+Attempt 3: Copy + Delete method
+└─ If fails, show user-friendly error message
+
+═══════════════════════════════════════════════════════════════════════════════
+  NEW ERROR MESSAGES
+═══════════════════════════════════════════════════════════════════════════════
+
+Instead of cryptic Windows error, you now see:
+
+❌ Không thể đổi tên game:
+Không thể đổi tên thư mục 'maple' sang 'MapleStory'. 
+Có thể thư mục đang được sử dụng. 
+Hãy đóng AutoClick hoặc game window và thử lại.
+
+═══════════════════════════════════════════════════════════════════════════════
+  FILES CHANGED
+═══════════════════════════════════════════════════════════════════════════════
+
+✓ scenario/library.py
+  - rename_game() - Retry logic with gc.collect()
+  - delete_game() - Retry logic
+  - delete_stage() - Retry logic
+  - copy_stage() - Retry logic
+
+✓ ui/library_panel.py
+  - rename_game_action() - Error dialog
+  - delete_game_action() - Error dialog
+  - copy_stage_action() - Error dialog
+  - delete_stage_action() - Error dialog
+
+═══════════════════════════════════════════════════════════════════════════════
+  TECHNICAL DETAILS
+═══════════════════════════════════════════════════════════════════════════════
+
+Retry logic:
+1. Force garbage collection: gc.collect()
+2. Brief pause: time.sleep(0.1)
+3. Try operation: os.rename(old, new)
+4. If fails with PermissionError, retry (up to 3x)
+
+Fallback:
+1. Copy folder to temp location
+2. Delete original folder
+3. Rename temp to final name
+
+═══════════════════════════════════════════════════════════════════════════════
+  SUCCESS INDICATORS
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Renaming works: "✅ Da doi ten game: maple -> MapleStory"
+✅ Deleting works: "✅ Da xoa game: MapleStory"
+✅ Copying works: "✅ Da copy ai: Stage1 -> Stage1_copy"
+
+═══════════════════════════════════════════════════════════════════════════════
+  TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════════════════
+
+Still getting error?
+
+1. Close everything:
+   - Close game window
+   - Close File Explorer
+   - Restart AutoClick
+   - Try again
+
+2. If still fails:
+   - Restart Windows
+   - Retry operation
+
+═══════════════════════════════════════════════════════════════════════════════
+  COMPLETION STATUS
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Task: Permission Error Fix - COMPLETE
+
+All folder operations (rename, delete, copy) now have:
+- Automatic retry (3x)
+- Garbage collection
+- Better error messages
+- Fallback methods
+
+Ready to use!
+
+═══════════════════════════════════════════════════════════════════════════════

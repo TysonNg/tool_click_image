@@ -1,0 +1,183 @@
+{
+  "process_loops": 999999,
+  "infinite_loop": true,
+  "click_delay": 0.1,
+  "templates": [
+    {
+      "type": "image",
+      "path": "capture_1.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 70,
+      "click_y": 19,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "2.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 82,
+      "click_y": 22,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "capture_2.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 104,
+      "click_y": 19,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "4.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 81,
+      "click_y": 30,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "5.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 120,
+      "click_y": 21,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "7.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 73,
+      "click_y": 28,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "7.1.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 71,
+      "click_y": 23,
+      "mask_path": null
+    },
+    {
+      "type": "image",
+      "path": "capture_3.png",
+      "repeat": 1,
+      "delay": 0.0,
+      "wait_until_found": false,
+      "wait_timeout": 0,
+      "threshold": 0.9,
+      "click_delay": 0.0,
+      "click_type": "single",
+      "search_region_enabled": false,
+      "search_region": {
+        "x1": 0,
+        "y1": 0,
+        "x2": 0,
+        "y2": 0
+      },
+      "click_point_mode": "center",
+      "click_x": 80,
+      "click_y": 21,
+      "mask_path": null
+    }
+  ]
+}

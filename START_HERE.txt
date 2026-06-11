@@ -1,0 +1,287 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║                   🎯 AUTOCLICK TOOL — START HERE 🎯                           ║
+║                                                                                ║
+║                         All Fixes Implemented & Verified                       ║
+║                             June 9, 2026                                       ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📚 DOCUMENTATION GUIDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Choose the document that best fits your needs:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 1️⃣  QUICK_REFERENCE.txt  (Start here for daily use)                        │
+│                                                                             │
+│     Perfect for:                                                           │
+│     • Learning the workflow                                                │
+│     • Setting up your first scenario                                       │
+│     • Troubleshooting common issues                                        │
+│     • Using keyboard shortcuts                                             │
+│                                                                             │
+│     Start with: Section "WORKFLOW (Step-by-Step)"                         │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 2️⃣  README_FIXES.md  (Best for understanding the system)                   │
+│                                                                             │
+│     Perfect for:                                                           │
+│     • Understanding all fixes                                              │
+│     • Learning how each feature works                                      │
+│     • Understanding the architecture                                       │
+│     • Flow diagrams and explanations                                       │
+│                                                                             │
+│     Start with: Section "Quick Summary"                                    │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 3️⃣  SYSTEM_STATUS.md  (For technical deep-dive)                            │
+│                                                                             │
+│     Perfect for:                                                           │
+│     • Understanding system architecture                                    │
+│     • Window protection flow                                               │
+│     • Coordinate system details                                            │
+│     • Technical implementation                                             │
+│                                                                             │
+│     Start with: Section "System Architecture"                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 4️⃣  CHANGES_SUMMARY.md  (For implementation details)                        │
+│                                                                             │
+│     Perfect for:                                                           │
+│     • Understanding what changed                                           │
+│     • Code change documentation                                            │
+│     • File-by-file modifications                                           │
+│     • Before/after flow diagrams                                           │
+│                                                                             │
+│     Start with: Section "Files Modified"                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ 5️⃣  SESSION_COMPLETE.txt  (For verification & status)                      │
+│                                                                             │
+│     Perfect for:                                                           │
+│     • Verifying all fixes are working                                      │
+│     • Checking code quality                                                │
+│     • System status dashboard                                              │
+│     • Next steps recommendations                                           │
+│                                                                             │
+│     Start with: Section "All Fixes Verified & Operational"                │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 QUICK START (5 Minutes)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  Click "🎯 Xác Định Cửa Sổ Đích"
+   └─ Enter game window name (e.g., "MapleStoryM")
+
+2️⃣  Click "📍 Lấy Tọa Độ Tương Đối (Relative)"
+   └─ Click position in game window to capture
+
+3️⃣  Click "💾 Lưu dữ liệu Trainer"
+   └─ Save your scenario
+
+4️⃣  Click "⚡ TUNG POKÉBALL!"
+   └─ Script runs!
+
+✅ Done! Window target is automatically restored next time you load the file.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ WHAT'S FIXED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Window Protection
+  └─ Auto-restores if minimized/hidden
+  └─ Auto-finds window by title if it restarts
+  └─ Continuous monitoring during execution
+
+✓ Relative Coordinates
+  └─ Clicks at correct position even if window moves
+  └─ Works across monitor configurations
+  └─ Auto-saves window title for verification
+
+✓ Scenario Management
+  └─ Window target auto-restored on load
+  └─ Support for old scenarios
+  └─ Smart image discovery on import
+
+✓ Data Safety
+  └─ Automatic timestamped backups
+  └─ Cleanup of old backups
+  └─ No data loss
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎯 KEY RECOMMENDATION: Use Relative Coordinates!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Why?
+  • Works even if game window moves
+  • Works across different monitor setups
+  • Works after game restarts
+  • More reliable and maintainable
+
+How?
+  1. Click "📍 Lấy Tọa Độ Tương Đối (Relative)"
+  2. Click position in game
+  3. Coordinates saved relative to window
+  4. Automatically converts on execution
+
+That's it! Window position changes are handled automatically.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+❓ COMMON QUESTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Q: "What if I close the game and restart it?"
+A: Auto-find by title! Script will find your game window automatically.
+   → See README_FIXES.md for details
+
+Q: "What if I move my game window?"
+A: No problem! Relative coordinates adjust automatically.
+   → Uses current window position to calculate clicks
+
+Q: "Will my old scenarios still work?"
+A: Yes! Old scenarios without window targets will ask you to select a window.
+   → Smart import handles duplicate images automatically
+
+Q: "What if something breaks?"
+A: Backups! Automatic timestamped backups are created.
+   → Your data is safe, always recoverable
+
+Q: "How do I troubleshoot issues?"
+A: QUICK_REFERENCE.txt has a troubleshooting section!
+   → Or look at the error message and check README_FIXES.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 DOCUMENT QUICK LINKS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Read in Order (Progressive Detail):
+  1. THIS FILE (START_HERE.txt) - Overview
+  2. QUICK_REFERENCE.txt - Practical usage guide
+  3. README_FIXES.md - How each fix works
+  4. SYSTEM_STATUS.md - Technical architecture
+  5. CHANGES_SUMMARY.md - Implementation details
+  6. SESSION_COMPLETE.txt - Verification checklist
+
+Quick Reference (Jump to topic):
+  • Workflow → QUICK_REFERENCE.txt
+  • Troubleshooting → QUICK_REFERENCE.txt
+  • Window protection → README_FIXES.md
+  • Coordinates → README_FIXES.md
+  • Technical details → SYSTEM_STATUS.md
+  • Code changes → CHANGES_SUMMARY.md
+  • Verification → SESSION_COMPLETE.txt
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 ADVANCED USAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Backup Your Tool:
+  👉 Run: python create_backup.py
+  👉 Creates timestamped backup
+  👉 Old backups auto-deleted (keeps 3 latest)
+
+Import Old Scenarios:
+  👉 Library → Right-click scenario file
+  👉 Auto-detects images
+  👉 Smart suffix handling for duplicates
+
+Load Multiple Scenarios:
+  👉 Click "📂 Tải dữ liệu Trainer"
+  👉 Select multiple files (Ctrl+Click)
+  👉 All run sequentially
+
+Change Keyboard Shortcuts:
+  👉 Click "⌨️ Phím Chiến Đấu" or "⌨️ Phím Rút Lui"
+  👉 Press new key when asked
+  👉 Default: F6 start, F7 stop
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 SYSTEM STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Window Protection:        ✅ ACTIVE
+Coordinate System:       ✅ WORKING
+Scenario Management:     ✅ AUTOMATIC
+Error Recovery:          ✅ OPERATIONAL
+Backup System:           ✅ RUNNING
+Documentation:           ✅ COMPLETE
+
+Overall: 🟢 PRODUCTION READY
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💡 PRO TIPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Always use RELATIVE coordinates
+   More reliable, works across restarts and window moves
+
+2. Test your scenario with one action first
+   Verify window auto-restore and coordinate placement
+
+3. Use meaningful window titles
+   Makes auto-finding more reliable
+
+4. Backup regularly
+   One command: python create_backup.py
+
+5. Keep game window visible during execution
+   Not minimized, not hidden, just regular window
+
+6. Use search region for large game windows
+   Speeds up image matching
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎓 LEARNING PATH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Beginner: Just want to use it
+  → QUICK_REFERENCE.txt (workflow section)
+
+Intermediate: Want to understand it
+  → README_FIXES.md (how each fix works)
+
+Advanced: Want to modify it
+  → CHANGES_SUMMARY.md (code changes)
+  → SYSTEM_STATUS.md (architecture)
+
+Expert: Want to extend it
+  → SYSTEM_STATUS.md (full technical details)
+  → Check the actual code files
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎉 YOU'RE READY!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Everything is set up and ready to go!
+
+Next Steps:
+  1. Open autoclick_gui.py
+  2. Set your target window
+  3. Capture some coordinates (use RELATIVE!)
+  4. Save a scenario
+  5. Run it!
+
+If anything goes wrong:
+  → Check QUICK_REFERENCE.txt troubleshooting
+  → Or read README_FIXES.md to understand the system
+
+Questions?
+  → Look for relevant section in the docs
+  → All possible issues are documented
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Happy automating! 🎯
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Last Updated: June 9, 2026
+All Systems: ✅ OPERATIONAL
+Status: 🟢 PRODUCTION READY

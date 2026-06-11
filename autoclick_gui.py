@@ -10,6 +10,8 @@ except Exception:
 import os
 import sys
 import tkinter as tk
+from tkinter import messagebox
+import win32gui
 
 # Ensure project root is on sys.path so submodules resolve
 _project_root = os.path.dirname(os.path.abspath(__file__))
@@ -25,10 +27,11 @@ except ImportError:
 from core import state
 from core.state import set_status
 from core.runner import start_clicking, stop_clicking, smart_start
-from scenario.io import save_scenario, load_scenario, load_multiple_scenarios, clear_scenarios
+from core.relative_capture import RelativeCoordinateCapture
+from scenario.io import save_scenario, load_scenario_combo
 from scenario.templates import (
     add_image, add_coordinate, add_current_position, add_keyboard_key,
-    set_search_region, clear_search_region, set_process_loops, set_speed, toggle_human_click, toggle_precision_mode,
+    set_search_region, clear_search_region, set_process_loops, set_speed, toggle_human_click,
     test_image_matching, update_history,
     delete_selected, clear_all_items, edit_delay, edit_image_config,
     move_selected_up, move_selected_down,
@@ -42,21 +45,315 @@ from ui.hotkeys import (
     capture_start_key, capture_stop_key,
 )
 from ui.layout import on_window_configure
+from ui.dialogs import _safe_destroy, _force_destroy
 from utils import safe_print
+
+# ════════════════════════════════════════════════════════════
+#  CUSTOM WINDOW TITLE INPUT (Without simpledialog bug)
+# ════════════════════════════════════════════════════════════
+def ask_window_title_custom():
+    """Ask user for window title using Tkinter (not simpledialog)"""
+    try:
+        dialog = tk.Toplevel(root)
+        dialog.title("📍 Xác Định Cửa Sổ Game")
+        dialog.geometry("450x200")
+        dialog.resizable(False, False)
+        dialog.transient(root)
+        dialog.grab_set()
+        
+        # Center on screen
+        dialog.update_idletasks()
+        x = (dialog.winfo_screenwidth() // 2) - (dialog.winfo_width() // 2)
+        y = (dialog.winfo_screenheight() // 2) - (dialog.winfo_height() // 2)
+        dialog.geometry(f'+{x}+{y}')
+        
+        result_var = tk.StringVar()
+        
+        tk.Label(dialog, text="📍 Nhập tên cửa sổ game:", 
+                font=("Segoe UI", 11, "bold")).pack(pady=10)
+        tk.Label(dialog, text="Ví dụ: 'Chrome', 'Notepad', 'My Game'\n"
+                            "(Không cần nhập đầy đủ, riêng phần cũng được)",
+                font=("Segoe UI", 9), fg="#666666").pack(pady=5)
+        
+        entry = tk.Entry(dialog, font=("Segoe UI", 11), width=40)
+        entry.pack(pady=15, padx=20)
+        entry.focus()
+        
+        def on_ok():
+            result_var.set(entry.get())
+            _safe_destroy(dialog)
+        
+        def on_cancel():
+            result_var.set(None)
+            _safe_destroy(dialog)
+        
+        button_frame = tk.Frame(dialog)
+        button_frame.pack(pady=15)
+        
+        tk.Button(button_frame, text="✅ OK", command=on_ok, width=12, font=("Segoe UI", 10)).pack(side=tk.LEFT, padx=5)
+        tk.Button(button_frame, text="❌ Cancel", command=on_cancel, width=12, font=("Segoe UI", 10)).pack(side=tk.LEFT, padx=5)
+        
+        # Bind Enter key
+        entry.bind('<Return>', lambda e: on_ok())
+        dialog.bind('<Escape>', lambda e: on_cancel())
+        
+        dialog.wait_window()
+        
+        return result_var.get() if result_var.get() else None
+        
+    except Exception as e:
+        safe_print(f"❌ Lỗi dialog: {e}")
+        messagebox.showerror("❌ Lỗi", f"Lỗi khi hiển thị dialog: {e}")
+        return None
+
+# ════════════════════════════════════════════════════════════
+#  SET TARGET WINDOW
+# ════════════════════════════════════════════════════════════
+def set_target_window():
+    """Set target window for all relative operations"""
+    
+    def setup_thread():
+        try:
+            # Get window title
+            window_title = ask_window_title_custom()
+            
+            if not window_title:
+                safe_print("❌ Đã hủy: Chưa chọn cửa sổ")
+                return
+            
+            # Find window
+            try:
+                hwnd = win32gui.FindWindow(None, window_title)
+                if hwnd == 0:
+                    # Try partial match
+                    found = False
+                    def enum_callback(hwnd, lParam):
+                        nonlocal found
+                        if window_title.lower() in win32gui.GetWindowText(hwnd).lower():
+                            state.game_hwnd = hwnd
+                            found = True
+                            return False
+                        return True
+                    
+                    win32gui.EnumWindows(enum_callback, None)
+                    if not found:
+                        messagebox.showerror("❌ Lỗi", f"Không tìm thấy cửa sổ: {window_title}")
+                        return
+                else:
+                    state.game_hwnd = hwnd
+                
+                # Get window info
+                window_info = RelativeCoordinateCapture.get_game_window_info()
+                if window_info:
+                    state.game_window_title = window_info['title']
+                    
+                    state.UI.status_label.config(
+                        text=f"✅ Đã xác định cửa sổ đích: {window_info['title']} | "
+                             f"Kích thước: {window_info['width']}x{window_info['height']}",
+                        fg=PKM_GREEN_LT
+                    )
+                    
+                    safe_print(f"✅ Window đích: {window_info['title']} (HWND: {state.game_hwnd})")
+                    
+                    # UPDATE title bar to show target window indicator
+                    _update_root_title()
+                    
+                    # UPDATE scenario panel display
+                    _update_target_window_display()
+                    
+                    # HIGHLIGHT window to show it's target
+                    _highlight_target_window()
+                    
+            except Exception as e:
+                messagebox.showerror("❌ Lỗi", f"Lỗi khi xác định cửa sổ: {e}")
+                return
+        
+        except Exception as e:
+            safe_print(f"❌ Lỗi: {e}")
+            messagebox.showerror("❌ Lỗi", f"Lỗi: {e}")
+    
+    # Run in thread
+    import threading
+    thread = threading.Thread(target=setup_thread, daemon=True)
+    thread.start()
+
+def _highlight_target_window():
+    """Highlight target window with flash and bring to front"""
+    if not state.game_hwnd:
+        return
+    
+    try:
+        hwnd = state.game_hwnd
+        
+        # Bring window to front
+        win32gui.SetForegroundWindow(hwnd)
+        
+        # Flash window to attract attention using ctypes (more reliable)
+        try:
+            import ctypes
+            from ctypes import wintypes
+            
+            # Define FlashWindowEx structure
+            class FLASHWINFO(ctypes.Structure):
+                _fields_ = [
+                    ("cbSize", wintypes.UINT),
+                    ("hwnd", wintypes.HWND),
+                    ("dwFlags", wintypes.UINT),
+                    ("uCount", wintypes.UINT),
+                    ("dwTimeout", wintypes.DWORD)
+                ]
+            
+            FLASHW_ALL = 0x03
+            
+            fwi = FLASHWINFO()
+            fwi.cbSize = ctypes.sizeof(FLASHWINFO)
+            fwi.hwnd = hwnd
+            fwi.dwFlags = FLASHW_ALL
+            fwi.uCount = 3
+            fwi.dwTimeout = 200
+            
+            ctypes.windll.user32.FlashWindowEx(ctypes.byref(fwi))
+            safe_print("✅ Target window highlighted (flashed 3x)")
+        except Exception as e:
+            safe_print(f"⚠️ Flash failed: {e}")
+        
+    except Exception as e:
+        safe_print(f"⚠️ Highlight failed: {e}")
+
+
+# ════════════════════════════════════════════════════════════
+#  RELATIVE COORDINATE CAPTURE HANDLER
+# ════════════════════════════════════════════════════════════
+def capture_relative_coordinates():
+    """Capture window-relative coordinates and open config dialog"""
+    
+    # Check if window already set
+    if not state.game_hwnd:
+        messagebox.showwarning("⚠️ Cảnh báo", 
+                              "Vui lòng bấm '🎯 Xác Định Cửa Sổ Đích' trước!")
+        return
+    
+    def capture_thread():
+        try:
+            # Use pre-set window
+            window_info = RelativeCoordinateCapture.get_game_window_info()
+            if not window_info:
+                messagebox.showerror("❌ Lỗi", "Không thể lấy thông tin cửa sổ")
+                return
+            
+            # Show confirmation
+            state.UI.status_label.config(
+                text=f"✅ Đang capture tọa độ từ: {window_info['title']} | "
+                     f"Vị trí: ({window_info['client_left']}, {window_info['client_top']}) | "
+                     f"Kích thước: {window_info['width']}x{window_info['height']}",
+                fg=PKM_GREEN_LT
+            )
+            
+            # Step 2: Capture UI
+            def on_capture_complete(rel_x, rel_y, percent_x, percent_y):
+                """Callback after coordinates are captured"""
+                try:
+                    # Step 3: Open coordinate config dialog with pre-filled values
+                    from ui.dialogs import show_coordinate_config_dialog
+                    
+                    # Pre-fill with captured coordinates
+                    config = show_coordinate_config_dialog(
+                        initial_x=int(rel_x),
+                        initial_y=int(rel_y)
+                    )
+                    
+                    if config is None:
+                        safe_print("❌ Đã hủy: Chưa cấu hình tọa độ")
+                        return
+                    
+                    # Step 4: Add to templates
+                    template = {
+                        'type': 'coord',
+                        'x': config['x'],
+                        'y': config['y'],
+                        'repeat': config['repeat'],
+                        'click_type': config['click_type'],
+                        'delay_before': config.get('delay_before', 0),  # Add delay before click
+                        'delay_after': config['delay_after'],
+                        'is_relative': True,  # Mark as relative coordinate
+                        'game_hwnd': state.game_hwnd,  # Store window handle
+                        'window_title': window_info['title'],  # Store window title for reference
+                        'path': f"📍 ({config['x']}, {config['y']}) [{percent_x:.1f}%, {percent_y:.1f}%] ({config['click_type']}, {config.get('delay_before', 0)}s+{config['delay_after']}s)"
+                    }
+                    
+                    state.templates.append(template)
+                    update_history()
+                    
+                    # Update status
+                    state.UI.status_label.config(
+                        text=f"✅ Đã thêm: Tọa độ ({config['x']}, {config['y']}) | "
+                             f"Click: {config['click_type']} | Delay trước: {config.get('delay_before', 0)}s | Delay sau: {config['delay_after']}s",
+                        fg=PKM_GREEN_LT
+                    )
+                    
+                    safe_print(f"✅ Đã thêm tọa độ tương đối: ({config['x']}, {config['y']}) "
+                              f"| {config['click_type']} | Trước: {config.get('delay_before', 0)}s | Sau: {config['delay_after']}s")
+                    
+                except Exception as e:
+                    safe_print(f"❌ Lỗi: {e}")
+                    messagebox.showerror("❌ Lỗi", f"Lỗi khi cấu hình tọa độ: {e}")
+            
+            # Show capture UI
+            RelativeCoordinateCapture.start_capture_ui(root, on_capture_complete)
+            
+        except Exception as e:
+            safe_print(f"❌ Lỗi capture: {e}")
+            messagebox.showerror("❌ Lỗi", f"Lỗi: {e}")
+    
+    # Run in thread
+    import threading
+    thread = threading.Thread(target=capture_thread, daemon=True)
+    thread.start()
 
 # ════════════════════════════════════════════════════════════
 #  ROOT WINDOW
 # ════════════════════════════════════════════════════════════
 root = tk.Tk()
-root.title("⚡ PokéClick PRO — Hệ thống Tự Động Chiến Đấu")
+
+# Function to update title with target window indicator
+def _update_root_title():
+    """Update root window title to show target window status"""
+    base_title = "⚡ PokéClick PRO — Hệ thống Tự Động Chiến Đấu"
+    if state.game_hwnd and state.game_window_title:
+        root.title(f"{base_title} | 🎯 TARGET: {state.game_window_title}")
+    else:
+        root.title(base_title)
+
+
+def _update_target_window_display():
+    """Update target window status display in scenario panel"""
+    if state.game_hwnd and state.game_window_title:
+        state.UI.target_window_text.set(f"🎯 Cửa sổ đích: {state.game_window_title}")
+    else:
+        state.UI.target_window_text.set("🎯 Cửa sổ đích: Chưa xác định")
+
+
+def clear_target_window():
+    """Clear target window setting"""
+    state.game_hwnd = None
+    state.game_window_title = None
+    _update_root_title()
+    _update_target_window_display()
+    safe_print("❌ Đã bỏ cửa sổ đích")
+    messagebox.showinfo("ℹ️ Thông báo", "Đã bỏ cửa sổ đích")
+
+# Initial title
+_update_root_title()
 
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-window_width = max(800, min(1400, int(screen_width * 0.7)))
-window_height = max(600, min(1000, int(screen_height * 0.75)))
-root.geometry(f"{window_width}x{window_height}")
+# Set smaller window size and position on left side
+window_width = 450  # Smaller width (compact sidebar)
+window_height = max(600, min(800, int(screen_height * 0.85)))
+# Position on left side: x=10, y=50
+root.geometry(f"{window_width}x{window_height}+10+50")
 root.resizable(True, True)
-root.minsize(700, 500)  # Set minimum window size to prevent UI breaking
+root.minsize(400, 500)  # Set minimum window size to prevent UI breaking
 root.configure(bg=PKM_BG_MAIN)
 root.base_width = window_width
 root.base_height = window_height
@@ -158,18 +455,28 @@ left_scrollbar = tk.Scrollbar(left_panel_outer, orient="vertical", command=left_
 left_panel = tk.Frame(left_canvas, bg=PKM_BG_MAIN)
 
 def _update_left_scroll_region(event=None):
-    left_canvas.configure(scrollregion=left_canvas.bbox("all"))
+    # Ensure scroll region includes all content
+    bbox = left_canvas.bbox("all")
+    if bbox:
+        left_canvas.configure(scrollregion=bbox)
+    else:
+        left_canvas.configure(scrollregion=(0, 0, 1, 1))
 
 left_panel.bind("<Configure>", _update_left_scroll_region)
 left_canvas.configure(yscrollcommand=left_scrollbar.set)
 left_canvas_window = left_canvas.create_window((0, 0), window=left_panel, anchor="nw")
 
 def _on_left_canvas_configure(event):
+    """Update canvas window width and ensure proper scrolling"""
     cw = event.width
     left_panel.update_idletasks()
     pw = left_panel.winfo_reqwidth()
-    left_canvas.itemconfig(left_canvas_window, width=max(cw, pw))
-    # Force update scroll region on resize
+    
+    # Set canvas window width to canvas width (or content width if larger)
+    actual_width = max(cw, pw)
+    left_canvas.itemconfig(left_canvas_window, width=actual_width)
+    
+    # Force update scroll region
     _update_left_scroll_region()
 
 left_canvas.pack(side="left", fill="both", expand=True)
@@ -188,18 +495,28 @@ right_scrollbar = tk.Scrollbar(right_panel_outer, orient="vertical", command=rig
 right_panel = tk.Frame(right_canvas, bg=PKM_BG_MAIN)
 
 def _update_right_scroll_region(event=None):
-    right_canvas.configure(scrollregion=right_canvas.bbox("all"))
+    # Ensure scroll region includes all content
+    bbox = right_canvas.bbox("all")
+    if bbox:
+        right_canvas.configure(scrollregion=bbox)
+    else:
+        right_canvas.configure(scrollregion=(0, 0, 1, 1))
 
 right_panel.bind("<Configure>", _update_right_scroll_region)
 right_canvas.configure(yscrollcommand=right_scrollbar.set)
 right_canvas_window = right_canvas.create_window((0, 0), window=right_panel, anchor="nw")
 
 def _on_right_canvas_configure(event):
+    """Update canvas window width and ensure proper scrolling"""
     cw = event.width
     right_panel.update_idletasks()
     pw = right_panel.winfo_reqwidth()
-    right_canvas.itemconfig(right_canvas_window, width=max(cw, pw))
-    # Force update scroll region on resize
+    
+    # Set canvas window width to canvas width (or content width if larger)
+    actual_width = max(cw, pw)
+    right_canvas.itemconfig(right_canvas_window, width=actual_width)
+    
+    # Force update scroll region
     _update_right_scroll_region()
 
 right_canvas.pack(side="left", fill="both", expand=True)
@@ -214,6 +531,11 @@ def _on_mousewheel(event):
         widget = root.winfo_containing(event.x_root, event.y_root)
         if widget is None:
             return
+        
+        # If it's a Listbox, scroll it directly
+        if isinstance(widget, tk.Listbox):
+            widget.yview_scroll(int(-1 * (event.delta / 120)), "units")
+            return "break"
         
         # Check if mouse is over left panel area
         if widget == left_canvas or widget in left_panel.winfo_children() or _is_child_of(widget, left_panel):
@@ -249,6 +571,11 @@ root.bind_all("<MouseWheel>", _on_mousewheel)
 # SECTION 1: Skills
 act_inner = create_card(left_panel, "⚔️  KỸ NĂNG CHIẾN ĐẤU (Tuần tự)", PKM_GOLD)
 
+# Window target setup
+create_btn(act_inner, "🎯  Xác Định Cửa Sổ Đích",
+           set_target_window, bg=PKM_YELLOW, fg=PKM_BG_DARK, hover_bg=PKM_WHITE
+           ).pack(fill="both", expand=True, pady=2, ipady=5, padx=0)
+
 create_btn(act_inner, "🖼️  Thêm Pokémon mục tiêu (Ảnh)",
            add_image, bg=PKM_BLUE, fg=PKM_WHITE, hover_bg=PKM_BLUE_LT
            ).pack(fill="both", expand=True, pady=2, ipady=5, padx=0)
@@ -259,6 +586,11 @@ create_btn(act_inner, "📍  Thêm tọa độ chiến trường (XY)",
 
 create_btn(act_inner, "🎯  Ghi nhớ vị trí chuột hiện tại  [⏳ 3s]",
            add_current_position, bg=PKM_GREEN, fg=PKM_BG_DARK, hover_bg=PKM_GREEN_LT
+           ).pack(fill="both", expand=True, pady=2, ipady=5, padx=0)
+
+create_btn(act_inner, "📍 Lấy Tọa Độ Tương Đối (Relative)",
+           capture_relative_coordinates, bg=PKM_PURPLE if 'PKM_PURPLE' in dir() else "#9933ff", 
+           fg=PKM_WHITE, hover_bg="#bb55ff" if 'PKM_PURPLE' in dir() else "#bb55ff"
            ).pack(fill="both", expand=True, pady=2, ipady=5, padx=0)
 
 create_btn(act_inner, "⌨️  Thêm phím bàn phím",
@@ -289,19 +621,8 @@ btn_human_mode = create_btn(human_mode_row, "🤖 Click tức thì: BẬT",
 btn_human_mode.pack(fill="both", expand=True, ipady=5)
 state.UI.btn_human_mode = btn_human_mode
 
-precision_mode_row = tk.Frame(settings_inner, bg=PKM_BG_CARD)
-precision_mode_row.pack(fill="both", expand=True, pady=(0, 2), padx=0)
-
-btn_precision_mode = create_btn(
-    precision_mode_row,
-    "🎯 Precision Mode: BẬT",
-    toggle_precision_mode,
-    bg=PKM_BLUE_DARK,
-    fg=PKM_YELLOW,
-    hover_bg=PKM_BLUE,
-)
-btn_precision_mode.pack(fill="both", expand=True, ipady=5)
-state.UI.btn_precision_mode = btn_precision_mode
+# ✅ Precision Mode: ALWAYS ON (no button needed)
+state.precision_mode = True
 
 hotkey_row = tk.Frame(settings_inner, bg=PKM_BG_CARD)
 hotkey_row.pack(fill="both", expand=True, pady=(4, 2), padx=0)
@@ -324,31 +645,17 @@ create_btn(scenario_row, "💾 Lưu dữ liệu Trainer",
            ).pack(side="left", fill="both", expand=True, padx=(0, 2), ipady=5)
 
 create_btn(scenario_row, "📂 Tải dữ liệu Trainer",
-           load_scenario, bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
+           load_scenario_combo, bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
            ).pack(side="right", fill="both", expand=True, padx=(2, 0), ipady=5)
-
-multi_scenario_row = tk.Frame(settings_inner, bg=PKM_BG_CARD)
-multi_scenario_row.pack(fill="both", expand=True, pady=(0, 2), padx=0)
-
-create_btn(multi_scenario_row, "📚 Tải nhiều kịch bản",
-           load_multiple_scenarios, bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
-           ).pack(fill="both", expand=True, ipady=5, padx=0)
-
-clear_scenario_row = tk.Frame(settings_inner, bg=PKM_BG_CARD)
-clear_scenario_row.pack(fill="both", expand=True, pady=(0, 2), padx=0)
-
-create_btn(clear_scenario_row, "🗑️ Xóa tất cả kịch bản",
-           clear_scenarios, bg=PKM_RED, fg=PKM_WHITE, hover_bg=PKM_RED_LIGHT
-           ).pack(fill="both", expand=True, ipady=5, padx=0)
 
 search_region_row = tk.Frame(settings_inner, bg=PKM_BG_CARD)
 search_region_row.pack(fill="both", expand=True, pady=(4, 0), padx=0)
 
 create_btn(search_region_row, "🔎 Giới hạn phạm vi tìm kiếm",
-           set_search_region, bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
+           set_search_region, bg=PKM_GOLD, fg=PKM_BG_DARK, hover_bg=PKM_YELLOW
            ).pack(fill="both", expand=True, ipady=5, padx=0)
 
-create_btn(search_region_row, "Clear Search Region",
+create_btn(search_region_row, "❌ Xóa Giới hạn",
            clear_search_region, bg=PKM_RED, fg=PKM_WHITE, hover_bg=PKM_RED_LIGHT
            ).pack(fill="both", expand=True, ipady=5, padx=0, pady=(4, 0))
 
@@ -413,9 +720,19 @@ else:
     lucario_canvas.create_text(190, 60, text="Lucario Ready for Battle!",
                                font=("Segoe UI", 14, "bold"), fill=PKM_YELLOW)
 
+# Target window status
+target_window_frame = tk.Frame(queue_inner, bg=PKM_BG_CARD, relief="flat", bd=0)
+target_window_frame.pack(fill="x", pady=(4, 2), padx=0)
+
+target_window_text = tk.StringVar(value="🎯 Cửa sổ đích: Chưa xác định")
+state.UI.target_window_text = target_window_text
+tk.Label(target_window_frame, textvariable=target_window_text,
+         font=("Segoe UI", 8), bg=PKM_BG_CARD, fg=PKM_GOLD,
+         anchor="center", justify="center", wraplength=360).pack(fill="x", padx=4, pady=2)
+
 # Setup info
 setup_info_frame = tk.Frame(queue_inner, bg=PKM_BG_CARD, relief="flat", bd=0)
-setup_info_frame.pack(fill="x", pady=(4, 4), padx=0)
+setup_info_frame.pack(fill="x", pady=(2, 4), padx=0)
 
 setup_info_text = tk.StringVar(value="🔄 Vòng lặp: 1  |  ⚡ Tốc độ: 1.0s")
 state.UI.setup_info_text = setup_info_text
@@ -475,8 +792,16 @@ row3.pack(fill="both", expand=True, pady=1, padx=0)
 create_btn(row3, "📋  Quản Lý Kịch Bản", edit_scenario_details,
            bg=PKM_BLUE_DARK, fg=PKM_YELLOW, hover_bg=PKM_BLUE
            ).pack(side="left", fill="both", expand=True, padx=(0, 2), ipady=5)
-create_btn(row3, "🗑️  Xóa Sạch", clear_all_items,
+
+row3_buttons = tk.Frame(row3, bg=PKM_BG_CARD)
+row3_buttons.pack(side="right", fill="both", expand=True, padx=(2, 0))
+
+create_btn(row3_buttons, "🗑️  Xóa Sạch", clear_all_items,
            bg=PKM_RED, fg=PKM_WHITE, hover_bg=PKM_RED_LIGHT
+           ).pack(side="left", fill="both", expand=True, padx=(0, 2), ipady=5)
+
+create_btn(row3_buttons, "❌  Bỏ Cửa sổ Đích", clear_target_window,
+           bg=PKM_GOLD, fg=PKM_BG_DARK, hover_bg="#ff8c3d"
            ).pack(side="right", fill="both", expand=True, padx=(2, 0), ipady=5)
 
 # ════════════════════════════════════════════════════════════
